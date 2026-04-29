@@ -1,0 +1,280 @@
+---
+title: "ECCA Sampling"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(sf)
+library(dplyr)
+library(units)
+library(lwgeom)
+```
+
+# Segment Generation
+
+All map data is imported from https://gisdata-wsdot.opendata.arcgis.com/
+
+```{r}
+chunk_by_mileposts <- function (row, start_mp, end_mp) {
+  row_start <- row$BARM # beginning of accumulated range of mileage
+  row_end <- row$EARM # ending of accumulated range of mileage
+  row_length <- row_end - row_start
+  
+  if (row_start >= end_mp || row_end < start_mp) {
+    return (NULL)
+  }
+  
+  new_start <- max(row_start, start_mp)
+  new_end <- min(row_end, end_mp)
+  
+  if (new_start >= new_end) {
+    return (NULL)
+  }
+  
+  t_start <- (new_start - row_start) / row_length
+  t_end <- (new_end - row_start) / row_length
+  st_linesubstring(row$geometry, t_start, t_end)
+}
+
+# this forces all segments the same length and distributes the remaining gap as equal-sized chunks between all the real segments
+fixed_length_fractions <- function (line_length, segment_length) {
+  total_gap <- line_length %% segment_length
+  n_segments <- floor(line_length / segment_length)
+  gap_step <- total_gap / (n_segments - 1)
+  step_size = segment_length + gap_step
+  
+  segment_starts <- seq(0, line_length, by=step_size)
+  segment_ends <- pmin(segment_starts + segment_length, line_length)
+  
+  fraction_starts <- segment_starts / line_length
+  fraction_ends <- segment_ends / line_length
+  data.frame(starts=fraction_starts, ends=fraction_ends)
+}
+
+fixed_number_fractions <- function (n_segments) {
+  fractions <- seq(0, 1, length.out=(n_segments + 1))
+  fraction_starts <- head(fractions, -1)
+  fraction_ends <- tail(fractions, -1)
+  data.frame(starts=fraction_starts, ends=fraction_ends)
+}
+
+create_segments <- function (area, segment_length) {
+  line <- area[1,]
+  line_length <- as.numeric(st_length(line))
+
+  fractions <- fixed_length_fractions(line_length, segment_length)
+  n_segments <- nrow(fractions)
+  
+  lapply(seq_len(n_segments), function(i) {
+    st_linesubstring(line, from = fractions$starts[i], to = fractions$ends[i])
+  }) |>
+    data.frame() |>
+    t() |>
+    st_sfc() |>
+    st_as_sf(crs = st_crs(line))
+}
+
+make_data_frame <- function (segments, start_mp, end_mp, area_label) {
+  segments$area <- area_label
+  segments$area_id <- seq_len(nrow(segments))
+  
+  mp_seq <- seq(start_mp, end_mp, length.out = nrow(segments) + 1)
+  segments$start.mp <- head(mp_seq, -1)
+  segments$end.mp   <- tail(mp_seq, -1)
+  
+  segments <- st_transform(segments, 4326) # lat/long coordinates
+  start_points <- st_startpoint(segments) |> st_coordinates()
+  segments$start.lat <- as.character(start_points[,1])
+  segments$start.lon <- as.character(start_points[,2])
+  segments$start.maplink <- paste0("https://www.google.com/maps?q=", segments$start.lon, ",", segments$start.lat)
+  
+  end_points <- st_endpoint(segments) |> st_coordinates()
+  segments$end.lat <- as.character(end_points[,1])
+  segments$end.lon <- as.character(end_points[,2])
+  segments$end.maplink <- paste0("https://www.google.com/maps?q=", segments$end.lon, ",", segments$end.lat)
+
+  segments
+}
+
+add_mileposts_to_segment <- function (data) {
+  data_segments <- st_cast(data, 'LINESTRING')
+  lengths <- as.numeric(st_length(st_transform(data_segments, 2927)) / 5280)
+  mp.starts <- c(0, head(lengths, -1))
+  mp.ends <- mp.starts + lengths
+  data_segments |> mutate(BARM = mp.starts, EARM = mp.ends)
+}
+
+extract_milepost_segments <- function (data, start_mp, end_mp) {
+  filtered_data <- data |> filter(BARM < {{ end_mp }} & EARM > {{ start_mp }})
+  
+  clipped_list <- lapply(1:nrow(filtered_data), function(i) {
+    chunk_by_mileposts(filtered_data[i, ], start_mp, end_mp)
+  })
+  
+  area <- st_as_sf(data.frame(geometry = do.call(c, clipped_list)), crs = st_crs(data)) |>
+    st_transform(2927)
+  
+  if (nrow(area) > 1) {
+    area <- st_line_merge(st_union(area))
+  }
+  area
+}
+
+```
+
+## Highway Stretches (Increasing/Decreasing)
+
+The LRS map includes separate segments for increasing mileposts (south side, eastbound) and decreasing mileposts (north side, westbound).
+
+```{r}
+make_highway_segments <- function (data, start_mp, end_mp, segment_size, label) {
+  extract_milepost_segments(data, start_mp, end_mp) |>
+    create_segments(segment_size) |>
+    make_data_frame(start_mp, end_mp, label)
+}
+
+highway_segment_size = 600 # feet
+file <- './data/WSDOT_-_State_Route_Linear_Referencing_System_(LRS)_Current.shp'
+routes <- st_read(file)
+
+wa14_mp_inc <- routes |>
+  filter(RouteIdent == '014i') |> # Eastbound/south side (mileposts increasing)
+  add_mileposts_to_segment()
+
+wa14_mp_dec <- routes |>
+  filter(RouteIdent == '014d') |> # Westbound/north side (mileposts decreasing)
+  add_mileposts_to_segment()
+
+# Mile post boundaries are based on ECCA agreements with the state
+area1N <- make_highway_segments(wa14_mp_dec, 10.09, 10.58, highway_segment_size, 'Highway: Camas-N')
+area1S <- make_highway_segments(wa14_mp_inc, 10.0, 11.99, highway_segment_size, 'Highway: Camas-S')
+area2S <- make_highway_segments(wa14_mp_inc, 14.33, 15.05, highway_segment_size, 'Highway: Washougal-SW-Extra')
+area3N <- make_highway_segments(wa14_mp_dec, 15.05, 17.0, highway_segment_size, 'Highway: Washougal-N')
+area3S <- make_highway_segments(wa14_mp_inc, 15.05, 17.0, highway_segment_size, 'Highway: Washgoual-S')
+```
+
+## Ramps
+
+```{r}
+make_ramp_segments <- function (data, id, segment_size, label) {
+  area <- data |> filter(RouteID == id) |> st_transform(2927)
+  create_segments(area$geometry, segment_size) |> make_data_frame(0, 0, label)
+}
+
+# https://gisdata-wsdot.opendata.arcgis.com/ --> WSDOT - State Route Ramp (1:24K) Current
+ramp_file <- './data/WSDOT_-_State_Route_Ramp_(1%3A24K)_Current.shp'
+
+# RouteID breakdown
+# 014 = state route
+# S = North on-ramp
+# R = North off-ramp
+# Q = South on-ramp
+# P = South off-ramp
+# 1 vs 5: ? (all samples are 1 except one 5)
+# XXXXX = MP XXX.XX
+# Example: 014P100978 => South off-ramp at mile 9.78 of state route 14
+
+ramps <- st_read(ramp_file)
+ramp_segment_size <- 10^10 # whole segment
+
+ramps_vancouver <- rbind(
+  #make_ramp_segments(ramps, '014P100978', ramp_segment_size, 'Ramp: Vancouver S off-ramp'), # West of 192nd
+  #make_ramp_segments(ramps, '014S100975', ramp_segment_size, 'Ramp: Vancouver N on-ramp'), # West of 192nd
+  make_ramp_segments(ramps, '014Q101046', ramp_segment_size, 'Ramp: Vancouver S on-ramp'),
+  make_ramp_segments(ramps, '014R101037', ramp_segment_size, 'Ramp: Vancouver N off-ramp'),
+  deparse.level = 1
+)
+
+ramps_camas <- rbind(
+  make_ramp_segments(ramps, '014P101203', ramp_segment_size, 'Ramp: Camas S off-ramp'),
+  make_ramp_segments(ramps, '014S101194', ramp_segment_size, 'Ramp: Camas N on-ramp'),
+  #make_ramp_segments(ramps, '014Q501249', ramp_segment_size, 'Ramp: Camas S on-ramp'),
+  #make_ramp_segments(ramps, '014R101249', ramp_segment_size, 'Ramp: Camas N off-ramp'),
+  deparse.level = 1
+)
+
+ramps_washougal <- rbind(
+  make_ramp_segments(ramps, '014P101430', ramp_segment_size, 'Ramp: Washougal S off-ramp'), # western pair, part of "unofficial" stretch
+  #make_ramp_segments(ramps, '014S101410', ramp_segment_size, 'Ramp: Washougal N on-ramp'), # western pair
+  make_ramp_segments(ramps, '014Q101544', ramp_segment_size, 'Ramp: Washougal S on-ramp'), # eastern pair
+  make_ramp_segments(ramps, '014R101542', ramp_segment_size, 'Ramp: Washougal N off-ramp'), # eastern pair
+  deparse.level = 1
+)
+
+onramps <- rbind(
+  make_ramp_segments(ramps, '014Q101046', ramp_segment_size, 'Ramp: Vancouver S on-ramp'),
+  make_ramp_segments(ramps, '014S101194', ramp_segment_size, 'Ramp: Camas N on-ramp'),
+  make_ramp_segments(ramps, '014Q101544', ramp_segment_size, 'Ramp: Washougal S on-ramp'), # eastern pair
+  deparse.level = 1
+)
+
+offramps <- rbind(
+  make_ramp_segments(ramps, '014P101203', ramp_segment_size, 'Ramp: Camas S off-ramp'),
+  make_ramp_segments(ramps, '014P101430', ramp_segment_size, 'Ramp: Washougal S off-ramp'), # western pair, part of "unofficial" stretch
+  make_ramp_segments(ramps, '014R101542', ramp_segment_size, 'Ramp: Washougal N off-ramp'), # eastern pair
+  make_ramp_segments(ramps, '014R101037', ramp_segment_size, 'Ramp: Vancouver N off-ramp'),
+  deparse.level = 1
+)
+```
+
+# Sampling
+
+```{r}
+sample_area <- function (area, n) {
+  lengths <- st_transform(area, 2927) |> st_length() |> as.numeric()
+  indices <- sample(nrow(area), n)
+  area[indices,]
+}
+
+samples <- rbind(
+  sample_area(area1N, 1),
+  sample_area(area1S, 1),
+  sample_area(area2S, 1),
+  sample_area(area3N, 1),
+  sample_area(area3S, 1),
+  #sample_area(ramps_vancouver, 1),
+  #sample_area(ramps_camas, 1),
+  #sample_area(ramps_washougal, 1),
+  sample_area(offramps, 2),
+  sample_area(onramps, 1),
+  deparse.level = 1
+)
+```
+
+# Testing & Verification
+
+```{r}
+verify_segment_lengths <- function (area) {
+  segment_lengths <- area |> st_transform(2927) |> st_length()
+  area_length <- segment_lengths |> sum() / 5280
+  c(segment_lengths, area_length)
+}
+
+verify_segment_lengths(area1N)
+verify_segment_lengths(area1S)
+verify_segment_lengths(area2S)
+verify_segment_lengths(area3N)
+verify_segment_lengths(area3S)
+
+verify_segment_lengths(ramps_vancouver)
+verify_segment_lengths(ramps_camas)
+verify_segment_lengths(ramps_washougal)
+```
+
+Use this with mileposts & direction:
+https://wsdot.wa.gov/data/tools/Locatemp
+Make sure you set direction correctly for the area you're working with
+Granularity is only to 0.01 (~50 feet), so only use this for approximate locations.
+
+Another map tool to verify:
+https://www.wsdot.wa.gov/mapsdata/tools/geoportal_ext.htm
+
+# Export
+
+```{r}
+full_data <- rbind(area1N, area1S, area2S, area3N, area3S, ramps_vancouver, ramps_camas, ramps_washougal, deparse.level = 1)
+write.csv(full_data, './full.csv')
+write.csv(samples, './samples.csv')
+```

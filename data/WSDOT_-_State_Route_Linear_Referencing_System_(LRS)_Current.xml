@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <origin/>
+                <pubdate>20240410</pubdate>
+                <title>Washington State LRS (2024)</title>
+                <geoform>vector digital data</geoform>
+                <onlink>https://data.wsdot.wa.gov/arcgis/rest/services/Shared/LRSData/FeatureServer/9</onlink>
+                <onlink>https://data.wsdot.wa.gov/geospatial/DOT_TDO/LRS/StateRouteLRS_2024.zip</onlink>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>State Routes are depicted as lines with State Route identifiers and route measure attributes. All State Routes are included in this dataset. A directional indicator has been added to the RouteIdentifier to distinguish between the increasing and decreasing direction of mileposting. Please direct questions about this dataset to: TransportationGISDataSteward@wsdot.wa.gov.</abstract>
+            <purpose>This data set is used: 1) for general-purpose base mapping; 2) as a Linear Referencing System (LRS); 3) for locating features on the State Route network by State Route Accumulated Route Mileage (dynamic segmentation).</purpose>
+        </descript>
+        <timeperd>
+            <timeinfo>
+                <sngdate>
+                    <caldate>20231231</caldate>
+                </sngdate>
+            </timeinfo>
+            <current>ground condition</current>
+        </timeperd>
+        <status>
+            <progress>Complete</progress>
+            <update>Annually</update>
+        </status>
+        <spdom>
+            <bounding>
+                <westbc>-124.674393</westbc>
+                <eastbc>-116.861321</eastbc>
+                <northbc>49.042512</northbc>
+                <southbc>45.504794</southbc>
+            </bounding>
+        </spdom>
+        <keywords>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>state route</themekey>
+                <themekey>LRS</themekey>
+                <themekey>highway</themekey>
+                <themekey>SR</themekey>
+            </theme>
+            <place>
+                <placekt>None</placekt>
+                <placekey>United States</placekey>
+                <placekey>Washington</placekey>
+                <placekey>USA</placekey>
+                <placekey>WA</placekey>
+                <placekey>Pacific Northwest</placekey>
+            </place>
+        </keywords>
+        <accconst>None</accconst>
+        <useconst>For Planning use only. The Washington State Department of Transportation (WSDOT) shall not be liable for any activity involving the use of the data, including, but not limited to, lost profits or savings or any other economic or consequential damages. Nor does the WSDOT warrant the fitness of the data for use for a particular purpose, or the installation of the data, its use, or the results obtained.
+To the fullest extent permitted by law, the Data User shall hold harmless, defend at its own expense, and indemnify WSDOT, its officers, employees, agents, and volunteers, against any and all liability, claims, losses, damages, or expenses, including reasonable attorney’s fees, arising from all acts or omissions of the Data User or its officers, agents, or employees in its use of the WSDOT data.</useconst>
+        <ptcontac>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>Washington State Department of Transportation</cntorg>
+                </cntorgp>
+                <cntemail>TransportationGISDataSteward@wsdot.wa.gov</cntemail>
+            </cntinfo>
+        </ptcontac>
+        <datacred>Washington State Department of Transportation</datacred>
+        <native>Version 6.2 (Build 9200) ; Esri ArcGIS 10.9.1.28388</native>
+    </idinfo>
+    <dataqual>
+        <attracc>
+            <attraccr>State Route numbers and Accumulated Route Mileage values were obtained from the State Highway Log.</attraccr>
+        </attracc>
+        <logic>This data forms a network representing the connectivity of State Routes (SR's) for Washington state. This includes all State Routes, US Routes, Interstates, Frontage Roads, Ramps, Ferry Terminals and some Proposed routes located within the TRIPS database.</logic>
+        <complete>The data set contains all of the state routes in the state of Washington. San Juan County contains no State Routes.</complete>
+        <posacc>
+            <horizpa>
+                <horizpar>Positional accuracy of this data set has not been determined.</horizpar>
+            </horizpa>
+        </posacc>
+        <lineage>
+            <srcinfo>
+                <typesrc>None</typesrc>
+                <srccontr>Geometry depicting Washington State Highways, attributes, and measure values to create the various 24k LRSs. These sources have included: USGS 7.5 Minute Quadrangles WSDOT Interchange Diagrams WSDOT State Highway Log GPS Based LRS Orthoimagery from DNR, Nies Mapping Group, Inc., NAIP, and the WSDOT Photogrammerty Office For more detailed information about these sources contact the data steward.</srccontr>
+            </srcinfo>
+            <procstep>
+                <procdesc>A directional indicator ( i or d ) was added to the SR24kLRS datasets and then merged into one featureclass.</procdesc>
+                <procdate>20240322</procdate>
+                <proccont>
+                    <cntinfo>
+                        <cntorgp>
+                            <cntorg>Washington State Department of Transportation</cntorg>
+                        </cntorgp>
+                        <cntemail>TransportationGISDataSteward@wsdot.wa.gov</cntemail>
+                    </cntinfo>
+                </proccont>
+            </procstep>
+        </lineage>
+    </dataqual>
+    <spdoinfo>
+        <indspref>State Route and Accumulated Route Mileage</indspref>
+        <direct>Vector</direct>
+        <ptvctinf>
+            <sdtsterm>
+                <sdtstype>String</sdtstype>
+                <ptvctcnt>4017</ptvctcnt>
+            </sdtsterm>
+        </ptvctinf>
+    </spdoinfo>
+    <eainfo>
+        <detailed>
+            <enttyp>
+                <enttypl>StateRouteLRS</enttypl>
+            </enttyp>
+            <attr>
+                <attrlabl>OBJECTID</attrlabl>
+                <attrdef>Internal feature number.</attrdef>
+                <attrdefs>Esri</attrdefs>
+                <attrdomv>
+                                        
+                    <udom>Sequential unique whole numbers that are automatically generated.</udom>
+                                    
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>RouteIdentifier</attrlabl>
+                <attrdef>A unique Route identifier to identify a route (City,County State, Tribal, Forest) in any given data set. For State Routes, Route IDs are assigned by WSDOT's GIS and Roadway Data Office</attrdef>
+                <attrdefs>WSDOT Application - DOTS</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>Label</attrlabl>
+                <attrdef>Text used for display purposes</attrdef>
+                <attrdefs>WSDOT ITD, Data Resource Managment Office</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>SymbolCode</attrlabl>
+                <attrdef>A code used for cartographic symbolization</attrdef>
+                <attrdefs>WSDOT ITD, Data Resource Managment Office</attrdefs>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>IS</edomv>
+                                                
+                        <edomvd>Interstate Route</edomvd>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>US</edomv>
+                                                
+                        <edomvd>US Route</edomvd>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>RA</edomv>
+                                                
+                        <edomvd>Ramp</edomvd>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>SR</edomv>
+                                                
+                        <edomvd>State Route</edomvd>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>LC</edomv>
+                                                
+                        <edomvd>Local Road either frontage road of Local access approach.</edomvd>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>FT</edomv>
+                                                
+                        <edomvd>Ferry Terminal</edomvd>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>RA</edomv>
+                                                
+                        <edomvd>Ramp</edomvd>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>PR</edomv>
+                                                
+                        <edomvd>Proposed Route</edomvd>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>StateRouteNumber</attrlabl>
+                <attrdef>The number assigned to the State Route and enacted into law by the Washington State Legislature</attrdef>
+                <attrdefs>WSDOT Application - DOTS</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>RelatedRouteType</attrlabl>
+                <attrdef>A Code that represents a a classification of a route associated with a mainline state route, examples include: Couplet, Spur, Alternate Route, etc.</attrdef>
+                <attrdefs>WSDOT Application - DOTS</attrdefs>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>Null</edomv>
+                                                
+                        <edomvd>Mainline</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>AR</edomv>
+                                                
+                        <edomvd>Alternate Route</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>CO</edomv>
+                                                
+                        <edomvd>Couplet</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>CD</edomv>
+                                                
+                        <edomvd>Collector Distributor Decreasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>CI</edomv>
+                                                
+                        <edomvd>Collector Distributor Increasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>FD</edomv>
+                                                
+                        <edomvd>Frontage Road Decreasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>FI</edomv>
+                                                
+                        <edomvd>Frontage Road Increasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>FT</edomv>
+                                                
+                        <edomvd>Ferry Terminal</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>FU</edomv>
+                                                
+                        <edomvd>Future Route</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>HD</edomv>
+                                                
+                        <edomvd>Grade-Seperated HOV Decreasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>HI</edomv>
+                                                
+                        <edomvd>Grade-Seperated HOV Increasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>LX</edomv>
+                                                
+                        <edomvd>Crossroad within Interchange</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>P1-P9</edomv>
+                                                
+                        <edomvd>Off Ramp, Increasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>PR</edomv>
+                                                
+                        <edomvd>Proposed Route</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>Q1-Q9</edomv>
+                                                
+                        <edomvd>On Ramp Increasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>R1-R9</edomv>
+                                                
+                        <edomvd>Off Ramp Decreasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>S1-S9</edomv>
+                                                
+                        <edomvd>On Ramp Decreasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>RL</edomv>
+                                                
+                        <edomvd>Reversible Lane</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>SP</edomv>
+                                                
+                        <edomvd>Spur</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>TB</edomv>
+                                                
+                        <edomvd>Turnback</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>U1-U9</edomv>
+                                                
+                        <edomvd>Weigh Station Ramp Increasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>W1-W9</edomv>
+                                                
+                        <edomvd>Weigh Station Ramp Decreasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>X1-X9</edomv>
+                                                
+                        <edomvd>Rest Area Ramp Increasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+                <attrdomv>
+                                        
+                    <edom>
+                                                
+                        <edomv>Y1-Y9</edomv>
+                                                
+                        <edomvd>Rest Area Ramp Decreasing</edomvd>
+                                                
+                        <edomvds>Washington State Highway Log</edomvds>
+                                            
+                    </edom>
+                                    
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>RelatedRouteQualifier</attrlabl>
+                <attrdef>A reference used to uniquely identify the physical location of the State Route Related Route Type. The State Route Related Route Qualifier can be based on a State Route Milepost, street name, city, or other distinguishing geographic reference.</attrdef>
+                <attrdefs>WSDOT Application - DOTS</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>SHAPE</attrlabl>
+                <attrdef>Feature geometry.</attrdef>
+                <attrdefs>Esri</attrdefs>
+                <attrdomv>
+                                        
+                    <udom>Coordinates defining the features.</udom>
+                                    
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>LRSDate</attrlabl>
+                <attrdef>The Linear Referencing System date that this record is using for location.</attrdef>
+                <attrdefs>WSDOT Application - DOTS</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>InventoryDirection</attrlabl>
+                <attrdef>A code that represents whether the State Route Mileposts associated with the route are in the (i) Increasing direction or (d) in the Decreasing direction.</attrdef>
+                <attrdefs>TDGMO Office</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>GlobalID</attrlabl>
+            </attr>
+            <attr>
+                <attrlabl>SHAPE.STLength()</attrlabl>
+            </attr>
+        </detailed>
+    </eainfo>
+    <distinfo>
+        <distrib>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>Washington State Department of Transportation, Office of Information Technology</cntorg>
+                    <cntper>Jordyn Mitchell</cntper>
+                </cntorgp>
+                <cntpos>GIS Database Administrator</cntpos>
+                <cntemail>jordyn.mitchell@wsdot.wa.gov</cntemail>
+            </cntinfo>
+        </distrib>
+        <distliab>See access and use constraints information.</distliab>
+        <custom>Download individual data sets from https://gisdata-wsdot.opendata.arcgis.com</custom>
+    </distinfo>
+    <metainfo>
+        <metd>20240322</metd>
+        <metc>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>Washington State Department of Transportation</cntorg>
+                </cntorgp>
+                <cntemail>TransportationGISDataSteward@wsdot.wa.gov</cntemail>
+            </cntinfo>
+        </metc>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>
