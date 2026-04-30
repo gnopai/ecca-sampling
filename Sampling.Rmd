@@ -148,8 +148,8 @@ wa14_mp_dec <- routes |>
   add_mileposts_to_segment()
 
 # Mile post boundaries are based on ECCA agreements with the state
-area1N <- make_highway_segments(wa14_mp_dec, 10.09, 10.58, highway_segment_size, 'Highway: Camas-N')
-area1S <- make_highway_segments(wa14_mp_inc, 10.0, 11.99, highway_segment_size, 'Highway: Camas-S')
+area1N <- make_highway_segments(wa14_mp_dec, 10.0, 11.99, highway_segment_size, 'Highway: Camas-N')
+area1S <- make_highway_segments(wa14_mp_inc, 10.09, 10.58, highway_segment_size, 'Highway: Camas-S')
 area2S <- make_highway_segments(wa14_mp_inc, 14.33, 15.05, highway_segment_size, 'Highway: Washougal-SW-Extra')
 area3N <- make_highway_segments(wa14_mp_dec, 15.05, 17.0, highway_segment_size, 'Highway: Washougal-N')
 area3S <- make_highway_segments(wa14_mp_inc, 15.05, 17.0, highway_segment_size, 'Highway: Washgoual-S')
