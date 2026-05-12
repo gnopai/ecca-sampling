@@ -10,6 +10,7 @@ library(sf)
 library(dplyr)
 library(units)
 library(lwgeom)
+library(stringr)
 ```
 
 # Segment Generation
@@ -62,7 +63,7 @@ chunk_by_mileposts <- function (row, start_mp, end_mp) {
   st_linesubstring(row$geometry, t_start, t_end)
 }
 
-create_segments <- function (area, segment_length) {
+create_segments <- function (area, segment_length=10^10) {
   line <- area[1,]
   line_length <- as.numeric(st_length(line))
 
@@ -93,9 +94,9 @@ fixed_length_fractions <- function (line_length, segment_length) {
   data.frame(starts=fraction_starts, ends=fraction_ends)
 }
 
-make_data_frame <- function (segments, start_mp, end_mp, area_label) {
+make_data_frame <- function (segments, start_mp, end_mp, area_label, segment_prefix=NULL) {
   segments$area <- area_label
-  segments$area.id <- as.character(seq_len(nrow(segments)))
+  segments$area.id <- str_c(segment_prefix, seq_len(nrow(segments)), sep='-')
   
   mp_seq <- seq(start_mp, end_mp, length.out = nrow(segments) + 1)
   segments$start.milepost <- head(mp_seq, -1)
@@ -121,10 +122,10 @@ make_data_frame <- function (segments, start_mp, end_mp, area_label) {
 The LRS map includes separate segments for increasing mileposts (south side, eastbound) and decreasing mileposts (north side, westbound).
 
 ```{r}
-make_highway_segments <- function (data, start_mp, end_mp, segment_size, label) {
+make_highway_segments <- function (data, start_mp, end_mp, segment_size, label, area_prefix) {
   extract_milepost_segments(data, start_mp, end_mp) |>
     create_segments(segment_size) |>
-    make_data_frame(start_mp, end_mp, label)
+    make_data_frame(start_mp, end_mp, label, area_prefix)
 }
 
 highway_segment_size = 600 # feet
@@ -140,20 +141,22 @@ wa14_mp_dec <- routes |>
   add_mileposts_to_segment()
 
 # Mile post boundaries are based on ECCA agreements with the state
-area1N <- make_highway_segments(wa14_mp_dec, 10.0, 11.99, highway_segment_size, 'Highway: Camas-N')
-area1S <- make_highway_segments(wa14_mp_inc, 10.09, 10.58, highway_segment_size, 'Highway: Camas-S')
-area2S <- make_highway_segments(wa14_mp_inc, 13.75, 14.3, highway_segment_size, 'Highway: Washougal-SW-Extra')
-area3N <- make_highway_segments(wa14_mp_dec, 15.05, 17.0, highway_segment_size, 'Highway: Washougal-N')
-area3S <- make_highway_segments(wa14_mp_inc, 15.05, 17.0, highway_segment_size, 'Highway: Washgoual-S')
+area1N <- make_highway_segments(wa14_mp_dec, 10.0, 11.99, highway_segment_size, 'Highway: Camas-N', 'H1')
+area1S <- make_highway_segments(wa14_mp_inc, 10.09, 10.58, highway_segment_size, 'Highway: Camas-S', 'H2')
+area2S <- make_highway_segments(wa14_mp_inc, 13.75, 14.3, highway_segment_size, 'Highway: Washougal-SW-Extra', 'H3')
+area3N <- make_highway_segments(wa14_mp_dec, 15.05, 17.0, highway_segment_size, 'Highway: Washougal-N', 'H4')
+area3S <- make_highway_segments(wa14_mp_inc, 15.05, 17.0, highway_segment_size, 'Highway: Washgoual-S', 'H5')
 ```
 
 ## Ramps
 
 ```{r}
-make_ramp_segments <- function (data, id, segment_size, label) {
-  area <- data |> filter(RouteID == id) |> st_transform(2927)
-  create_segments(area$geometry, segment_size) |>
-    make_data_frame(0, 0, label) |>
+make_ramp_segments <- function (data, id, start_mp, end_mp, label) {
+  area <- data |> filter(RouteID == id) |>
+    add_mileposts_to_segment() |>
+    extract_milepost_segments(start_mp, end_mp) |>
+    create_segments() |>
+    make_data_frame(start_mp, end_mp, label) |>
     mutate(area.id = id)
 }
 
@@ -168,23 +171,22 @@ is_off_ramp <- function (ramp) {
 
 ramp_file <- './data/WSDOT_-_State_Route_Ramp_(1%3A24K)_Current.shp'
 ramps <- st_read(ramp_file)
-ramp_segment_size <- 10^10 # whole segment
 
 
 vancouver_ramps <- rbind(
-  make_ramp_segments(ramps, '014Q101046', ramp_segment_size, 'Ramp: Vancouver S on-ramp'),
-  make_ramp_segments(ramps, '014R101037', ramp_segment_size, 'Ramp: Vancouver N off-ramp'),
+  make_ramp_segments(ramps, '014Q101046', 0.01, 0.21, 'Ramp: Vancouver S on-ramp'),
+  make_ramp_segments(ramps, '014R101037', 0.06, 0.27, 'Ramp: Vancouver N off-ramp'),
   deparse.level = 1
 )
 
 camas_ramps <- rbind(
-  make_ramp_segments(ramps, '014S101194', ramp_segment_size, 'Ramp: Camas N on-ramp'),
-  make_ramp_segments(ramps, '014P101203', ramp_segment_size, 'Ramp: Camas S off-ramp'),
+  make_ramp_segments(ramps, '014S101194', 0.13, 0.34, 'Ramp: Camas N on-ramp'),
+  make_ramp_segments(ramps, '014P101203', 0.03, 0.29, 'Ramp: Camas S off-ramp'),
   deparse.level = 1
 )
 
-washgoual_on_ramp <- make_ramp_segments(ramps, '014Q101544', ramp_segment_size, 'Ramp: Washougal S on-ramp') # eastern pair
-washougal_off_ramp <- make_ramp_segments(ramps, '014P101430', ramp_segment_size, 'Ramp: Washougal S off-ramp') # western pair, part of "unofficial" stretch
+washgoual_on_ramp <- make_ramp_segments(ramps, '014Q101544', 0, 0.26, 'Ramp: Washougal S on-ramp') # eastern pair
+washougal_off_ramp <- make_ramp_segments(ramps, '014P101430', 0.07, 0.38, 'Ramp: Washougal S off-ramp') # western pair, part of "unofficial" stretch
 washougal_ramps <- rbind(washgoual_on_ramp, washougal_off_ramp, deparse.level = 1)
 ```
 
@@ -193,37 +195,42 @@ washougal_ramps <- rbind(washgoual_on_ramp, washougal_off_ramp, deparse.level = 
 The official sampling has already been run so this shouldn't be needed other than for reference.
 
 ```{r}
-sample_area <- function (area, n) {
-  indices <- sample(nrow(area), n)
-  area[indices,]
-}
+# These are the officially sampled areas
+sample_area_ids = c('H1-8', 'H2-1', 'H3-3', 'H4-10', 'H5-5', '014Q101046', '014S101194', '014P101430')
 
-vancouver_ramp_sample <- sample_area(vancouver_ramps, 1)
-camas_ramp_sample <- sample_area(camas_ramps, 1)
-both_are_on_ramps <- is_on_ramp(vancouver_ramp_sample) & is_on_ramp(camas_ramp_sample)
-both_are_off_ramps <- is_off_ramp(vancouver_ramp_sample) & is_off_ramp(camas_ramp_sample)
-
-washougal_ramp_sample <- NA
-
-if (both_are_off_ramps) {
-  washougal_ramp_sample <- washgoual_on_ramp
-} else if (both_are_on_ramps) {
-  washougal_ramp_sample <- washougal_off_ramp
-} else {
-  washougal_ramp_sample <- sample_area(washougal_ramps, 1)
-}
-
-samples <- rbind(
-  sample_area(area1N, 1),
-  sample_area(area1S, 1),
-  sample_area(area2S, 1),
-  sample_area(area3N, 1),
-  sample_area(area3S, 1),
-  vancouver_ramp_sample,
-  camas_ramp_sample,
-  washougal_ramp_sample,
-  deparse.level = 1
-)
+### Code that was previously used for determining the above sampled areas
+#
+# sample_area <- function (area, n) {
+#   indices <- sample(nrow(area), n)
+#   area[indices,]
+# }
+#
+# vancouver_ramp_sample <- sample_area(vancouver_ramps, 1)
+# camas_ramp_sample <- sample_area(camas_ramps, 1)
+# both_are_on_ramps <- is_on_ramp(vancouver_ramp_sample) & is_on_ramp(camas_ramp_sample)
+# both_are_off_ramps <- is_off_ramp(vancouver_ramp_sample) & is_off_ramp(camas_ramp_sample)
+#
+# washougal_ramp_sample <- NA
+#
+# if (both_are_off_ramps) {
+#   washougal_ramp_sample <- washgoual_on_ramp
+# } else if (both_are_on_ramps) {
+#   washougal_ramp_sample <- washougal_off_ramp
+# } else {
+#   washougal_ramp_sample <- sample_area(washougal_ramps, 1)
+# }
+#
+# samples <- rbind(
+#   sample_area(area1N, 1),
+#   sample_area(area1S, 1),
+#   sample_area(area2S, 1),
+#   sample_area(area3N, 1),
+#   sample_area(area3S, 1),
+#   vancouver_ramp_sample,
+#   camas_ramp_sample,
+#   washougal_ramp_sample,
+#   deparse.level = 1
+# )
 ```
 
 # Testing & Verification
@@ -249,11 +256,16 @@ verify_segment_lengths(washougal_ramps)
 # Export
 
 ```{r}
+out_dir = 'out'
+if (!dir.exists(out_dir)) {
+  dir.create(out_dir)
+}
+
 full_data <- data.frame(rbind(area1N, area1S, area2S, area3N, area3S, vancouver_ramps, camas_ramps, washougal_ramps, deparse.level = 1))
 data_cols <- colnames(full_data) |> head(-1) # exclude geometry data in the last column
 full_data <- full_data[, data_cols]
-write.csv(full_data, './full.csv')
+write.csv(full_data, paste0(out_dir, '/full.csv'))
 
-sample_data <- data.frame(samples)[, data_cols]
-write.csv(sample_data, './samples.csv')
+sample_data <- full_data |> filter(area.id %in% sample_area_ids)
+write.csv(sample_data, paste0(out_dir, '/samples.csv'))
 ```
