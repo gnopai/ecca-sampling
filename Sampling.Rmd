@@ -11,6 +11,8 @@ library(dplyr)
 library(units)
 library(lwgeom)
 library(stringr)
+library(ggplot2)
+library(maptiles)
 ```
 
 # Segment Generation
@@ -253,7 +255,7 @@ verify_segment_lengths(camas_ramps)
 verify_segment_lengths(washougal_ramps)
 ```
 
-# Export
+# Export Data
 
 ```{r}
 out_dir = 'out'
@@ -269,3 +271,78 @@ write.csv(full_data, paste0(out_dir, '/full.csv'))
 sample_data <- full_data |> filter(area.id %in% sample_area_ids)
 write.csv(sample_data, paste0(out_dir, '/samples.csv'))
 ```
+
+# Maps
+
+```{r}
+map.provider <- 'CartoDB.Positron'
+map.credit <- get_credit(map.provider)
+
+get_map_tiles <- function (sf_obj, zoom=16) {
+  tiles <- get_tiles(
+    st_bbox(sf_obj),
+    provider = map.provider,
+    zoom = zoom
+  )
+}
+
+plot_map_with_sf <- function (tiles, sf_obj) {
+  tiles_df <- as.data.frame(tiles, xy = T)
+  colnames(tiles_df) <- c('x', 'y', 'red', 'green', 'blue')
+  
+  ggplot() +
+    geom_raster(data = tiles_df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
+    geom_sf(data = sf_obj, color = "lightgray", size = 1.5) +
+    geom_sf(data = sf_obj, color = "red", size = 0.5) +
+    scale_fill_identity() +
+    coord_sf() +
+    theme_void() +
+    annotate(geom = 'text', x = max(tiles_df$x), y = min(tiles_df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2)
+}
+
+load_and_generate_map <- function (data) {
+  data.latlong <- data |> st_transform(4326)
+  tiles <- get_map_tiles(data.latlong)
+  plot_map_with_sf(tiles, data.latlong)
+}
+
+save_map_image <- function (map_data, filename) {
+  ggsave(paste0(out_dir, '/', filename, '.png'), plot=map_data, width = 8, height = 8, dpi = 300)
+}
+```
+
+TODO:
+
+* Highways
+* Indicate which are sampled and which aren't
+* Maybe top-level map with everything?
+
+Full bounds:
+```{r}
+upperright <- c(45.589923417430036, -122.33073635197849)
+lowerleft <- c(45.570868740374976, -122.48175112504627)
+fullbox <- c(left = lowerleft[2], bottom = lowerleft[1], right = upperright[2], top = upperright[1])
+```
+
+
+
+Create and display maps:
+
+```{r}
+vancouver_ramps.map <- load_and_generate_map(vancouver_ramps)
+camas_ramps.map <- load_and_generate_map(camas_ramps)
+washougal_ramp_east.map <- load_and_generate_map(washougal_ramps[1,])
+washougal_ramp_west.map <- load_and_generate_map(washougal_ramps[2,])
+
+c(vancouver_ramps.map, camas_ramps.map, washougal_ramp_east.map, washougal_ramp_west.map)
+```
+
+Save maps as png files to out directory:
+
+```{r}
+save_map_image(vancouver_ramps.map, 'vancouver_ramps')
+save_map_image(camas_ramps.map, 'camas_ramps')
+save_map_image(washougal_ramp_east.map, 'washougal_ramp_east')
+save_map_image(washougal_ramp_west.map, 'washougal_ramp_west')
+```
+
