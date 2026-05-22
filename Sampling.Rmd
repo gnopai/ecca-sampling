@@ -180,19 +180,17 @@ ramps <- st_read(ramp_file)
 
 vancouver_ramps <- rbind(
   make_ramp_segments(ramps, '014Q101046', 0.01, 0.21, 'Ramp: Vancouver S on-ramp'),
-  make_ramp_segments(ramps, '014R101037', 0.06, 0.27, 'Ramp: Vancouver N off-ramp'),
-  deparse.level = 1
+  make_ramp_segments(ramps, '014R101037', 0.06, 0.27, 'Ramp: Vancouver N off-ramp')
 )
 
 camas_ramps <- rbind(
   make_ramp_segments(ramps, '014S101194', 0.13, 0.45, 'Ramp: Camas N on-ramp'),
-  make_ramp_segments(ramps, '014P101203', 0, 0.34, 'Ramp: Camas S off-ramp'),
-  deparse.level = 1
+  make_ramp_segments(ramps, '014P101203', 0, 0.34, 'Ramp: Camas S off-ramp')
 )
 
 washgoual_on_ramp <- make_ramp_segments(ramps, '014Q101544', 0, 0.26, 'Ramp: Washougal S on-ramp') # eastern pair
 washougal_off_ramp <- make_ramp_segments(ramps, '014P101430', 0.07, 0.38, 'Ramp: Washougal S off-ramp') # western pair, part of "unofficial" stretch
-washougal_ramps <- rbind(washgoual_on_ramp, washougal_off_ramp, deparse.level = 1)
+washougal_ramps <- rbind(washgoual_on_ramp, washougal_off_ramp)
 ```
 
 # Sampling
@@ -233,8 +231,7 @@ sample_area_ids = c('H1-8', 'H2-1', 'H3-3', 'H4-10', 'H5-5', '014Q101046', '014S
 #   sample_area(area3S, 1),
 #   vancouver_ramp_sample,
 #   camas_ramp_sample,
-#   washougal_ramp_sample,
-#   deparse.level = 1
+#   washougal_ramp_sample
 # )
 ```
 
@@ -266,7 +263,7 @@ if (!dir.exists(out_dir)) {
   dir.create(out_dir)
 }
 
-full_data <- data.frame(rbind(area1N, area1S, area2S, area3N, area3S, vancouver_ramps, camas_ramps, washougal_ramps, deparse.level = 1))
+full_data <- data.frame(rbind(area1N, area1S, area2S, area3N, area3S, vancouver_ramps, camas_ramps, washougal_ramps))
 data_cols <- colnames(full_data) |> head(-1) # exclude geometry data in the last column
 full_data <- full_data[, data_cols]
 write.csv(full_data, paste0(out_dir, '/full.csv'))
@@ -312,43 +309,38 @@ make_tiles_df <- function (tiles) {
   tiles_df
 }
 
-plot_ramp_map <- function (tiles, sf_obj, sample, legend_position) {
-  tiles_df <- make_tiles_df(tiles)
-  sf_obj_feet <- sf_obj |> st_transform(CRS_FEET)
-  sample_feet <- sample |> st_transform(CRS_FEET)
-  
+plot_map <- function (tiles, objects, legend, legend_theme) {
+  map.df <- make_tiles_df(tiles)
   ggplot() +
-    geom_raster(data = tiles_df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
-    geom_sf(data = sf_obj_feet, color = "lightgray", size = 1.5) +
-    geom_sf(data = sf_obj_feet, aes(color = "Unsampled"), size = 0.5) +
-    geom_sf(data = sample_feet, aes(color = "Sampled"), size = 0.6) +
+    geom_raster(data = map.df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
+    geom_sf(data = objects, aes(color = type, linewidth = line_size)) +
     scale_fill_identity() +
+    scale_linewidth_identity() +
     coord_sf() +
     theme_void() +
-    annotate(geom = 'text', x = max(tiles_df$x), y = min(tiles_df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2) +
-    scale_color_manual(name = '', values = c('Unsampled' = 'blue', 'Sampled' = 'red')) +
-    theme(legend.position = legend_position, legend.justification = c(1, 1))
+    annotate(geom = 'text', x = max(map.df$x), y = min(map.df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2) +
+    legend +
+    legend_theme
 }
 
-plot_ramp_map_no_sample <- function (tiles, sf_obj, legend_position) {
-  tiles_df <- make_tiles_df(tiles)
-  sf_obj_feet <- sf_obj |> st_transform(CRS_FEET)
-
-  ggplot() +
-    geom_raster(data = tiles_df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
-    geom_sf(data = sf_obj_feet, color = "lightgray", size = 1.5) +
-    geom_sf(data = sf_obj_feet, aes(color = "Sampled"), size = 0.5) +
-    geom_sf(data = sf_obj_feet, aes(color = "Unsampled"), size = 0.5) +
-    scale_fill_identity() +
-    coord_sf() +
-    theme_void() +
-    annotate(geom = 'text', x = max(tiles_df$x), y = min(tiles_df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2) +
-    scale_color_manual(name = '', values = c('Unsampled' = 'blue', 'Sampled' = 'red')) +
-    theme(legend.position = legend_position, legend.justification = c(1, 1))
+plot_ramp_map <- function (tiles, objects, legend_position) {
+  legend <- scale_color_manual(name = '', values = c('Unsampled' = 'darkgreen', 'Sampled' = 'orange'))
+  legend_theme <- theme(legend.position = legend_position, legend.justification = c(1, 1))
+  plot_map(tiles, objects, legend, legend_theme)
 }
 
 save_map_image <- function (map_data, filename) {
   ggsave(paste0(out_dir, '/', filename, '.png'), plot=map_data, width = 8, height = 8, dpi = 300)
+}
+
+clean_sf <- function (sf_data) {
+  sf_column <- attr(data, 'sf_column')
+  data <- sf_data |>
+    st_transform(CRS_FEET) |>
+    select({{ sf_column }})
+  colnames(data) <- c('geometry')
+  attr(data, 'sf_column') <- 'geometry'
+  data
 }
 ```
 
@@ -360,13 +352,14 @@ area1S_full <- extract_milepost_segments(wa14_mp_inc, min(area1S$start.milepost)
 area2S_full <- extract_milepost_segments(wa14_mp_inc, min(area2S$start.milepost), max(area2S$end.milepost))
 area3N_full <- extract_milepost_segments(wa14_mp_dec, min(area3N$start.milepost), max(area3N$end.milepost))
 area3S_full <- extract_milepost_segments(wa14_mp_inc, min(area3S$start.milepost), max(area3S$end.milepost))
-all_highways <- rbind(area1N_full, area1S_full, area2S_full, area3N_full, area3S_full, deparse.level = 1)
+all_highways <- rbind(area1N_full, area1S_full, area2S_full, area3N_full, area3S_full) |>
+  st_transform(CRS_FEET)
 
-east_highways <- rbind(area3N_full, area3S_full, deparse.level = 1)
-west_highways <- rbind(area1N_full, area1S_full, deparse.level = 1)
-extra_highways <- rbind(area2S_full, deparse.level = 1)
+east_highways <- rbind(area3N_full, area3S_full)
+west_highways <- rbind(area1N_full, area1S_full)
+extra_highways <- rbind(area2S_full)
 
-highway_samples <- data.frame(rbind(area1N, area1S, area2S, area3N, area3S, deparse.level = 1)) |>
+highway_samples <- rbind(area1N, area1S, area2S, area3N, area3S) |>
   filter(area.id %in% sample_area_ids) |>
   select(x)
 colnames(highway_samples) <- c('geometry')
@@ -384,52 +377,36 @@ extra_highway.tiles <- get_map_tiles(extra_highways, zoom=15, crop=T)
 Generate and save maps:
 
 ```{r}
-west_map_df <- make_tiles_df(west_highways.tiles)
-west_map <- ggplot() +
-  geom_raster(data = west_map_df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
-  geom_sf(data = area1N_full, aes(color = "Unsampled"), size = 0.4) +
-  geom_sf(data = area1S_full, aes(color = "Unsampled"), size = 0.4) +
-  geom_sf(data = west_highway_samples, aes(color = "Sampled"), size = 0.5) +
-  scale_fill_identity() +
-  coord_sf() +
-  theme_void() +
-  annotate(geom = 'text', x = max(west_map_df$x), y = min(west_map_df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2) +
-  scale_color_manual(name = '', values = c('Unsampled' = 'blue', 'Sampled' = 'red')) +
-  theme(legend.position = c(0.2, 0.4), legend.justification = c(1, 1))
+legend_highway <- scale_color_manual(name = '', values = c('Unsampled' = 'blue', 'Sampled' = 'red'))
+
+west_map.data <- rbind(
+  clean_sf(area1N_full) |> cbind(type = 'Unsampled', line_size = 0.4),
+  clean_sf(area1S_full) |> cbind(type = 'Unsampled', line_size = 0.4),
+  clean_sf(west_highway_samples) |> cbind(type = 'Sampled', line_size = 0.5)
+)
+west_map <- plot_map(west_highways.tiles, west_map.data, legend_highway, theme(legend.position = c(0.2, 0.4), legend.justification = c(1, 1)))
 save_map_image(west_map, 'west_highways')
 
-east_map_df <- make_tiles_df(east_highways.tiles)
-east_map <- ggplot() +
-  geom_raster(data = east_map_df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
-  geom_sf(data = area3N_full, aes(color = "Unsampled"), size = 0.4) +
-  geom_sf(data = area3S_full, aes(color = "Unsampled"), size = 0.4) +
-  geom_sf(data = east_highway_samples, aes(color = "Sampled"), size = 0.5) +
-  scale_fill_identity() +
-  coord_sf() +
-  theme_void() +
-  annotate(geom = 'text', x = max(east_map_df$x), y = min(east_map_df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2) +
-  scale_color_manual(name = '', values = c('Unsampled' = 'blue', 'Sampled' = 'red')) +
-  theme(legend.position = c(0.2, 0.4), legend.justification = c(1, 1))
+east_map.data <- rbind(
+  clean_sf(area3N_full) |> cbind(type = 'Unsampled', line_size = 0.4),
+  clean_sf(area3S_full) |> cbind(type = 'Unsampled', line_size = 0.4),
+  clean_sf(east_highway_samples) |> cbind(type = 'Sampled', line_size = 0.5)
+)
+east_map <- plot_map(east_highways.tiles, east_map.data, legend_highway, theme(legend.position = c(0.2, 0.4), legend.justification = c(1, 1)))
 save_map_image(east_map, 'east_highways')
 
-extra_map_df <- make_tiles_df(extra_highway.tiles)
-extra_map <- ggplot() +
-  geom_raster(data = extra_map_df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
-  geom_sf(data = area2S_full, aes(color = "Unsampled"), size = 0.6) +
-  geom_sf(data = extra_highway_samples, aes(color = "Sampled"), size = 0.75) +
-  scale_fill_identity() +
-  coord_sf() +
-  theme_void() +
-  annotate(geom = 'text', x = max(extra_map_df$x), y = min(extra_map_df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2) +
-  scale_color_manual(name = '', values = c('Unsampled' = 'blue', 'Sampled' = 'red')) +
-  theme(legend.position = c(0.2, 0.9), legend.justification = c(1, 1))
+extra_map.data <- rbind(
+  clean_sf(area2S_full) |> cbind(type = 'Unsampled', line_size = 0.6),
+  clean_sf(extra_highway_samples) |> cbind(type = 'Sampled', line_size = 0.75)
+)
+extra_map <- plot_map(extra_highway.tiles, extra_map.data, legend_highway, theme(legend.position = c(0.2, 0.9), legend.justification = c(1, 1)))
 save_map_image(extra_map, 'extra_highway')
 ```
 
 ## Ramps
 
 ```{r}
-all_ramps = rbind(vancouver_ramps, camas_ramps, washougal_ramps, deparse.level = 1) |>
+all_ramps = rbind(vancouver_ramps, camas_ramps, washougal_ramps) |>
   st_transform(CRS_FEET)
 
 ramp_samples <- all_ramps |>
@@ -447,16 +424,31 @@ washougal_ramp_west.tiles <- get_map_tiles(washougal_ramps[2,], zoom=17, crop=T,
 Generate and save maps:
 
 ```{r}
-vancouver_ramps.map <- plot_ramp_map(vancouver_ramps.tiles, vancouver_ramps, ramp_samples[1,], legend_position=c(0.2, 0.3))
+vancouver_ramps.data <- rbind(
+  clean_sf(vancouver_ramps) |> cbind(type = 'Unsampled', line_size = 0.5),
+  clean_sf(ramp_samples[1,]) |> cbind(type = 'Sampled', line_size = 0.6)
+)
+vancouver_ramps.map <- plot_ramp_map(vancouver_ramps.tiles, vancouver_ramps.data, legend_position=c(0.2, 0.3))
 save_map_image(vancouver_ramps.map, 'vancouver_ramps')
 
-camas_ramps.map <- plot_ramp_map(camas_ramps.tiles, camas_ramps, ramp_samples[2,], legend_position=c(0.2, 1))
+camas_ramps.data <- rbind(
+  clean_sf(camas_ramps) |> cbind(type = 'Unsampled', line_size = 0.5),
+  clean_sf(ramp_samples[2,]) |> cbind(type = 'Sampled', line_size = 0.6)
+)
+camas_ramps.map <- plot_ramp_map(camas_ramps.tiles, camas_ramps.data, legend_position=c(0.2, 1))
 save_map_image(camas_ramps.map, 'camas_ramps')
 
-washougal_ramp_east.map <- plot_ramp_map_no_sample(washougal_ramp_east.tiles, washougal_ramps[1,], legend_position=c(0.2, 0.4))
+washougal_ramp_east.data <- rbind(
+  clean_sf(washougal_ramps[1,]) |> cbind(type = 'Unsampled', line_size = 0.5)
+)
+washougal_ramp_east.map <- plot_ramp_map(washougal_ramp_east.tiles, washougal_ramp_east.data, legend_position=c(0.2, 0.4))
 save_map_image(washougal_ramp_east.map, 'washougal_ramp_east')
 
-washougal_ramp_west.map <- plot_ramp_map(washougal_ramp_west.tiles, washougal_ramps[2,], ramp_samples[3,], legend_position=c(0.2, 0.45))
+washougal_ramp_west.data <- rbind(
+  clean_sf(washougal_ramps[2,]) |> cbind(type = 'Unsampled', line_size = 0.5),
+  clean_sf(ramp_samples[3,]) |> cbind(type = 'Sampled', line_size = 0.6)
+)
+washougal_ramp_west.map <- plot_ramp_map(washougal_ramp_west.tiles, washougal_ramp_west.data, legend_position=c(0.2, 0.45))
 save_map_image(washougal_ramp_west.map, 'washougal_ramp_west')
 ```
 
@@ -481,6 +473,11 @@ east_areas <- rbind(east_highways, east_ramps)
 west_areas.tiles <- get_map_tiles(west_areas, zoom=14, crop=T, gap=500)
 east_areas.tiles <- get_map_tiles(east_areas, zoom=14, crop=T, gap=500)
 
+unsampled_highway <- 'Unsampled Highway'
+sampled_highway <- 'Sampled Highway'
+unsampled_ramp <- 'Unsampled Ramp'
+sampled_ramp <- 'Sampled Ramp'
+
 legend_full <- scale_color_manual(
   name = '',
   values = c(
@@ -489,44 +486,54 @@ legend_full <- scale_color_manual(
     'Unsampled Ramp' = 'darkgreen',
     'Sampled Ramp' = 'orange'
   ),
-  breaks = c('Unsampled Highway', 'Sampled Highway', 'Unsampled Ramp', 'Sampled Ramp')
+  breaks = c(unsampled_highway, sampled_highway, unsampled_ramp, sampled_ramp)
 )
+
 legend_theme <- theme(
   legend.position = c(0.93, 0.98),
   legend.justification = c(1, 1),
   legend.text = element_text(size = 8),
   legend.key.spacing.y = unit(-0.3, 'lines')
 )
-line_size = 0.3
+line_size_full = 0.3
 
-west_areas.df <- make_tiles_df(west_areas.tiles)
-west_areas.map <- ggplot() +
-  geom_raster(data = west_areas.df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
-  geom_sf(data = west_highways, aes(color = "Unsampled Highway"), size = line_size) +
-  geom_sf(data = highway_samples[1:2,], aes(color = "Sampled Highway"), size = line_size) +
-  geom_sf(data = west_ramps, aes(color = "Unsampled Ramp"), size = line_size) +
-  geom_sf(data = ramp_samples[1:2,], aes(color = "Sampled Ramp"), size = line_size) +
-  scale_fill_identity() +
-  coord_sf() +
-  theme_void() +
-  annotate(geom = 'text', x = max(west_areas.df$x), y = min(west_areas.df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2) +
-  legend_full +
-  legend_theme
+west_map_data <- rbind(
+  clean_sf(west_highways) |> cbind(type = unsampled_highway, line_size = line_size_full),
+  clean_sf(highway_samples[1:2,])|> cbind(type = sampled_highway, line_size = line_size_full),
+  clean_sf(west_ramps) |> cbind(type = unsampled_ramp, line_size = line_size_full),
+  clean_sf(ramp_samples[1:2,]) |> cbind(type = sampled_ramp, line_size = line_size_full)
+)
+west_areas.map <- plot_map(west_areas.tiles, west_map_data, legend_full, legend_theme)
 save_map_image(west_areas.map, 'full_map_west')
 
-east_areas.df <- make_tiles_df(east_areas.tiles)
-east_areas.map <- ggplot() +
-  geom_raster(data = east_areas.df, aes(x = x, y = y, fill = rgb(red, green, blue, maxColorValue = 255))) +
-  geom_sf(data = east_highways, aes(color = "Unsampled Highway"), size = line_size) +
-  geom_sf(data = highway_samples[3:5,], aes(color = "Sampled Highway"), size = line_size) +
-  geom_sf(data = east_ramps, aes(color = "Unsampled Ramp"), size = line_size) +
-  geom_sf(data = ramp_samples[3,], aes(color = "Sampled Ramp"), size = line_size) +
-  scale_fill_identity() +
-  coord_sf() +
-  theme_void() +
-  annotate(geom = 'text', x = max(east_areas.df$x), y = min(east_areas.df$y), label = map.credit, hjust = 'inward', vjust = 'inward', size = 2) +
-  legend_full +
-  legend_theme
+east_map_data <- rbind(
+  clean_sf(east_highways) |> cbind(type = unsampled_highway, line_size = line_size_full),
+  clean_sf(highway_samples[3:5,]) |> cbind(type = sampled_highway, line_size = line_size_full),
+  clean_sf(east_ramps) |> cbind(type = unsampled_ramp, line_size = line_size_full),
+  clean_sf(ramp_samples[3,]) |> cbind(type = sampled_ramp, line_size = line_size_full)
+)
+east_areas.map <- plot_map(east_areas.tiles, east_map_data, legend_full, legend_theme)
 save_map_image(east_areas.map, 'full_map_east')
+
+legend_full_no_samples <- scale_color_manual(
+  name = '',
+  values = c(
+    'Highway' = 'blue',
+    'Ramp' = 'darkgreen'
+  ),
+  breaks = c('Highway', 'Ramp')
+)
+
+west_areas_no_samples <- west_map_data |>
+  filter(type %in% c(unsampled_highway, unsampled_ramp)) |>
+  mutate(type = str_remove(type, 'Unsampled '))
+west_areas_no_samples.map <- plot_map(west_areas.tiles, west_areas_no_samples, legend_full_no_samples, legend_theme)
+save_map_image(west_areas_no_samples.map, 'full_map_west_no_samples')
+
+east_areas_no_samples <- east_map_data |>
+  filter(type %in% c(unsampled_highway, unsampled_ramp)) |>
+  mutate(type = str_remove(type, 'Unsampled '))
+east_areas_no_samples.map <- plot_map(east_areas.tiles, east_areas_no_samples, legend_full_no_samples, legend_theme)
+save_map_image(east_areas_no_samples.map, 'full_map_east_no_samples')
 ```
 
