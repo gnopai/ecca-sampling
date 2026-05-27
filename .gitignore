@@ -1,1 +1,17 @@
 out/
+
+# tex build artifacts
+*.log
+*.aux
+*.out
+*.bbl
+*.blg
+*.bcf
+*.nav
+*.toc
+*.run.xml
+*.snm
+*.vrb
+
+# Addison's build system artifacts
+.slideshow

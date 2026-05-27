@@ -1,0 +1,113 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{metropolis}
+\usecolortheme{default}
+
+\usefonttheme{professionalfonts}
+\setsansfont{Fira Sans}[
+  BoldFont={Fira Sans Bold},
+  ItalicFont={Fira Sans Italic},
+  UprightFont={Fira Sans Regular}   % instead of Light
+]
+
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{mathtools}
+\usepackage[mathscr]{euscript}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{multicol}
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{arrows.meta}
+\usepackage{lipsum}
+\usepackage{changepage}
+\usepackage{diagbox}
+
+\usepackage[backend=biber]{biblatex}
+
+\tikzset{
+  invisible/.style={opacity=0},
+  visible on/.style={alt={#1{}{invisible}}},
+  alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}
+  },
+}
+
+\title{Highway Litter Sampling}
+\author{Mark Bennett \\ Addison Cartmell \\ Maddi Gao \\ Khloud Zamzani}
+\date{}
+
+\setbeamersize{text margin right=6em, text margin left=6em}
+
+\begin{document}
+
+\begin{frame}
+	\titlepage
+\end{frame}
+
+\begin{frame}{Project Overview and Goals}
+	The ECCA wants to study trash on their highway:
+	\begin{itemize}
+		\item Trash items
+		\item Trash weight
+	\end{itemize}
+
+	We want to get them a sampling plan.
+\end{frame}
+
+\newcommand{\imageframe}[1]{
+{
+\setbeamertemplate{footline}{}
+\setbeamertemplate{headline}{}
+\begin{frame}[plain]
+\begin{tikzpicture}[remember picture, overlay]
+    \node[at=(current page.center)] {
+        \includegraphics[width=\paperwidth, height=\paperheight, keepaspectratio]
+		{#1}
+    };
+\end{tikzpicture}
+\end{frame}
+}
+}
+
+\imageframe{map.png}
+
+
+\begin{frame}{Plan: Get Sampling Areas}
+	We will choose sampling areas for the ECCA volunteers to clear and subsequently gather data from.
+
+	Sampling areas should
+	\begin{itemize}
+		\item Be representative of both on/off ramp areas and the open road
+		\item Enable comparison to the 2022 Washington Statewide Litter Study
+	\end{itemize}
+
+	We'll get this to ECCA by April 22nd, our next meeting.
+\end{frame}
+
+\imageframe{sorting.png}
+
+\begin{frame}{Plan: Generate Measurement Protocol}
+	We will design a measurement protocol for the ECCA volunteers.
+
+	This should
+	\begin{itemize}
+		\item Enable comparison to the 2022 Washington Study
+		\item Be compatible with the EPA's Escaped Trash Assessment Protocol
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Overview}
+	We'll give ECCA a method to measure trash buildup.
+
+	The method will enable comparisons to other data.
+
+	Data is useful if it helps address heavy trash buildup;
+
+	Data may be used to argue for litter reduction efforts.
+\end{frame}
+
+\end{document}
