@@ -25,6 +25,7 @@
 \usepackage{lipsum}
 \usepackage{changepage}
 \usepackage{diagbox}
+\usepackage{tabulary}
 
 \usepackage[backend=biber]{biblatex}
 
@@ -51,6 +52,127 @@
 \begin{frame}{Placeholder slide}
 	I'll add some slides when they're done -- Addison
 \end{frame}
+
+\begin{frame}
+  \frametitle{Sampling Design}
+  \textbf{Approach:}
+  \begin{itemize}
+    \item Determine areas (strata) to use to group all the highways and ramps
+    \item Assumption: trash in a given area is relatively similar anywhere in the area, but possibly different from other areas
+    \item Pick some number of segments from each area to use in the sample
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{West Side Areas}
+  \begin{center}
+    \includegraphics[width=4.25in]{img/full_map_west_no_samples}
+  \end{center}
+  \begin{itemize}
+    \item 2 highway stretches (north/westbound, south/eastbound)
+    \item 2 pairs of ramps
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{East Side Areas}
+  \begin{center}
+    \includegraphics[width=4.25in]{img/full_map_east_no_samples}
+  \end{center}
+  \begin{itemize}
+    \item 3 highway stretches
+    \item 1 pair of ramps
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Groupings}
+  \textbf{Approach:}
+  \begin{itemize}
+    \item 5 highway areas and 5 samples: take 1 sample from each
+    \item 3 ramp pairs and 3 samples: take 1 sample from each pair
+    \item Make sure at least 1 on-ramp and 1 off-ramp included
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sampling Execution}
+  \begin{block}{Idea}
+    Do sampling entirely in software using geospatial data from WSDOT
+  \end{block}
+  \bigskip
+  \bigskip
+  We use data from the \textbf{WSDOT Geospatial Open Data Portal}:
+  \begin{itemize}
+    \item Highway data: "WSDOT - State Route Linear Referencing System (LRS) Current"
+    \item Ramp data: "WSDOT - State Route Ramp (1:24K) Current"
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Highway Sampling}
+  \textbf{Approach:}
+  \begin{enumerate}
+    \item Load geospatial data for both sides of Highway 14
+    \item Filter these into the 5 areas using the milepost boundaries for what ECCA cleans
+    \item Divide each area into 600 foot segments
+    \item Randomly select one of these segments in each area
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Highway Sampling: Segments}
+  \begin{center}
+    \begin{tabulary}{1.0\textwidth}{|L|L|L|R|R|R|}
+      \hline
+      \textbf{area} & \textbf{area ID} & \textbf{start MP} & \textbf{end MP} & \textbf{total miles} & \textbf{total segments} \\ \hline
+      Camas (north) & H1 & 10 & 11.99 & 1.99 & 17 \\ \hline
+      Camas (south) & H2 & 10.09 & 10.58 & 0.49 & 4 \\ \hline
+      Washougal “extra” (south) & H3 & 13.75 & 14.3 & 0.55 & 4 \\ \hline
+      Washougal (north) & H4 & 15.05 & 17 & 1.95 & 17 \\ \hline
+      Washgoual (south) & H5 & 15.05 & 17 & 1.95 & 17 \\ \hline
+    \end{tabulary}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ramp Sampling}
+  \begin{block}{Idea}
+    Pick one ramp from each pair, but make sure at least one on-ramp and one off-ramp are selected
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sampling Results: West Side}
+  \begin{center}
+    \includegraphics[width=4.25in]{img/full_map_west}
+  \end{center}
+  \begin{itemize}
+    \item 2 highway samples
+    \item 2 ramp samples
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sampling Results: East Side}
+  \begin{center}
+    \includegraphics[width=4.25in]{img/full_map_east}
+  \end{center}
+  \begin{itemize}
+    \item 3 highway samples
+    \item 1 ramp sample
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sampling: Further Details}
+  In our final report you can find:
+  \begin{itemize}
+    \item Link to the code used to generate the samples
+    \item A more technical description of the statistical methodology
+  \end{itemize}
+\end{frame}
+
 
 \newcommand{\imageframe}[1]{
 {
