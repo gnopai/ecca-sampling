@@ -61,8 +61,11 @@
   \frametitle{Sampling Design}
   \textbf{Approach:}
   \begin{itemize}
+    \pause
     \item Determine areas (strata) to use to group all the highways and ramps
+    \pause
     \item Assumption: trash in a given area is relatively similar anywhere in the area, but possibly different from other areas
+    \pause
     \item Pick some number of segments from each area to use in the sample
   \end{itemize}
 \end{frame}
@@ -93,8 +96,11 @@
   \frametitle{Groupings}
   \textbf{Approach:}
   \begin{itemize}
+    \pause
     \item 5 highway areas and 5 samples: take 1 sample from each
+    \pause
     \item 3 ramp pairs and 3 samples: take 1 sample from each pair
+    \pause
     \item Make sure at least 1 on-ramp and 1 off-ramp included
   \end{itemize}
 \end{frame}
@@ -106,6 +112,7 @@
   \end{block}
   \bigskip
   \bigskip
+  \pause
   We use data from the \textbf{WSDOT Geospatial Open Data Portal}:
   \begin{itemize}
     \item Highway data: "WSDOT - State Route Linear Referencing System (LRS) Current"
@@ -117,27 +124,15 @@
   \frametitle{Highway Sampling}
   \textbf{Approach:}
   \begin{enumerate}
+    \pause
     \item Load geospatial data for both sides of Highway 14
+    \pause
     \item Filter these into the 5 areas using the milepost boundaries for what ECCA cleans
+    \pause
     \item Divide each area into 600 foot segments
+    \pause
     \item Randomly select one of these segments in each area
   \end{enumerate}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Highway Sampling: Segments}
-  \begin{center}
-    \rowcolors{1}{darkgray!20}{darkgray!5}
-    \begin{tabulary}{1.0\textwidth}{|L|L|L|R|R|R|}
-      \hline
-      \textbf{area} & \textbf{area ID} & \textbf{start MP} & \textbf{end MP} & \textbf{total miles} & \textbf{total segments} \\ \hline
-      Camas (north) & H1 & 10 & 11.99 & 1.99 & 17 \\ \hline
-      Camas (south) & H2 & 10.09 & 10.58 & 0.49 & 4 \\ \hline
-      Washougal “extra” (south) & H3 & 13.75 & 14.3 & 0.55 & 4 \\ \hline
-      Washougal (north) & H4 & 15.05 & 17 & 1.95 & 17 \\ \hline
-      Washgoual (south) & H5 & 15.05 & 17 & 1.95 & 17 \\ \hline
-    \end{tabulary}
-  \end{center}
 \end{frame}
 
 \begin{frame}
@@ -168,16 +163,6 @@
     \item 1 ramp sample
   \end{itemize}
 \end{frame}
-
-\begin{frame}
-  \frametitle{Sampling: Further Details}
-  In our final report you can find:
-  \begin{itemize}
-    \item Link to the code used to generate the samples
-    \item A more technical description of the statistical methodology
-  \end{itemize}
-\end{frame}
-
 
 \newcommand{\imageframe}[1]{
 {
