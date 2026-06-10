@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ECCA Litter Study</title>
+<style>
+/* ── Reset & base ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  background:#f5f7f2;
+  color:#1e2a1a;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+
+/* ── Colour tokens ────────────────────────────────────── */
+:root{
+  --green-dark:#2d5a27;
+  --green-mid:#4a7c42;
+  --green-light:#d4e8cf;
+  --green-pale:#eef4ec;
+  --accent:#7ab648;
+  --amber:#e07b39;
+  --amber-light:#fdf0e8;
+  --red:#c0392b;
+  --red-light:#fdecea;
+  --blue:#2a6496;
+  --blue-light:#e8f2fa;
+  --border:#c8d8c0;
+  --surface:#ffffff;
+  --text:#1e2a1a;
+  --text-mid:#4a5a44;
+  --text-light:#7a8a74;
+  --chip-off:#eef4ec;
+  --chip-off-border:#b0c8a8;
+  --chip-on-bg:var(--green-mid);
+  --chip-on-text:#fff;
+  --radius:8px;
+  --shadow:0 1px 4px rgba(0,0,0,.10);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+header{
+  background:var(--green-dark);
+  color:#fff;
+  padding:10px 16px 0;
+}
+header h1{font-size:1.05rem;font-weight:700;letter-spacing:.02em;margin-bottom:2px}
+header .sub{font-size:.75rem;opacity:.75;margin-bottom:8px}
+
+/* ── Tabs ─────────────────────────────────────────────── */
+nav.tabs{display:flex;gap:2px;overflow-x:auto;padding-bottom:0}
+nav.tabs button{
+  flex:1 1 auto;
+  padding:8px 6px 7px;
+  border:none;
+  background:rgba(255,255,255,.12);
+  color:rgba(255,255,255,.8);
+  font-size:.78rem;font-weight:600;
+  border-radius:6px 6px 0 0;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background .15s,color .15s;
+  min-width:52px;
+}
+nav.tabs button.active{background:#fff;color:var(--green-dark);}
+nav.tabs button:not(.active):hover{background:rgba(255,255,255,.22)}
+
+/* ── Context banner ───────────────────────────────────── */
+#ctx-banner{
+  background:var(--green-light);
+  border-bottom:1px solid var(--border);
+  padding:6px 14px;
+  font-size:.8rem;
+  color:var(--green-dark);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+#ctx-banner span{font-weight:700}
+#ctx-banner .ctx-badge{
+  background:var(--green-mid);color:#fff;
+  border-radius:20px;padding:1px 10px;font-size:.75rem;
+}
+
+/* ── Main content ─────────────────────────────────────── */
+main{flex:1;overflow-y:auto}
+.tab-panel{display:none;padding:14px}
+.tab-panel.active{display:block}
+
+/* ── Cards ────────────────────────────────────────────── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:var(--shadow);
+}
+.card-title{
+  font-size:.8rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-mid);margin-bottom:10px;
+}
+
+/* ── Field groups ─────────────────────────────────────── */
+.field{margin-bottom:14px}
+.field label{
+  display:block;font-size:.82rem;font-weight:600;
+  color:var(--text);margin-bottom:5px;
+}
+.field label .opt{font-weight:400;color:var(--text-light);font-size:.75rem;margin-left:4px}
+.field input,.field textarea,.field select{
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:9px 11px;
+  font-size:.95rem;
+  font-family:inherit;
+  background:#fff;
+  color:var(--text);
+  transition:border-color .15s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;border-color:var(--green-mid);
+  box-shadow:0 0 0 2px rgba(74,124,66,.15);
+}
+.field textarea{min-height:70px;resize:vertical}
+.field-error{
+  color:var(--red);font-size:.78rem;margin-top:4px;display:none;
+}
+.field.has-error input,.field.has-error textarea,.field.has-error select{
+  border-color:var(--red);
+}
+.field.has-error .field-error{display:block}
+
+/* ── Chip buttons ─────────────────────────────────────── */
+.chip-group{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.chip{
+  display:inline-flex;align-items:center;
+  padding:8px 14px;
+  border:1.5px solid var(--chip-off-border);
+  border-radius:20px;
+  background:var(--chip-off);
+  color:var(--text);
+  font-size:.85rem;font-weight:500;
+  cursor:pointer;
+  transition:background .12s,border-color .12s,color .12s;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.chip:hover{border-color:var(--green-mid)}
+.chip.selected{
+  background:var(--chip-on-bg);
+  border-color:var(--chip-on-bg);
+  color:var(--chip-on-text);
+}
+.chip.toggle-chip{border-radius:8px}
+
+/* ── Sub-group indent ─────────────────────────────────── */
+.sub-group{
+  margin-top:8px;
+  padding:10px 12px;
+  background:var(--green-pale);
+  border-left:3px solid var(--accent);
+  border-radius:0 6px 6px 0;
+}
+.sub-group .sub-label{
+  font-size:.78rem;font-weight:600;color:var(--text-mid);
+  margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;
+}
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:11px 20px;
+  border:none;border-radius:var(--radius);
+  font-size:.92rem;font-weight:600;font-family:inherit;
+  cursor:pointer;
+  transition:background .15s,opacity .15s;
+  width:100%;
+}
+.btn-primary{background:var(--green-mid);color:#fff}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-secondary{background:var(--green-light);color:var(--green-dark);border:1.5px solid var(--border)}
+.btn-secondary:hover{background:#c4dcc0}
+.btn-danger{background:var(--red-light);color:var(--red);border:1.5px solid #f0c0bb}
+.btn-danger:hover{background:#f8d7d4}
+.btn-amber{background:var(--amber-light);color:var(--amber);border:1.5px solid #f0c8a8}
+.btn-amber:hover{background:#fae4cc}
+.btn-blue{background:var(--blue-light);color:var(--blue);border:1.5px solid #b8d4ea}
+.btn-blue:hover{background:#d4e8f6}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-row{display:flex;gap:8px;margin-top:10px}
+.btn-row .btn{flex:1}
+.btn-sm{padding:7px 12px;font-size:.8rem;width:auto}
+
+/* ── Status messages ──────────────────────────────────── */
+.status-msg{
+  border-radius:var(--radius);padding:10px 14px;
+  font-size:.85rem;margin-bottom:12px;display:none;
+}
+.status-msg.show{display:block}
+.status-msg.success{background:#e8f5e8;color:#2a6b28;border:1px solid #b0d8b0}
+.status-msg.error{background:var(--red-light);color:var(--red);border:1px solid #f0c0bb}
+.status-msg.info{background:var(--blue-light);color:var(--blue);border:1px solid #b8d4ea}
+.status-msg.warn{background:var(--amber-light);color:var(--amber);border:1px solid #f0c8a8}
+
+/* ── Brand search ─────────────────────────────────────── */
+.brand-wrap{position:relative}
+.brand-wrap input{padding-right:32px}
+.brand-dropdown{
+  position:absolute;top:calc(100% + 2px);left:0;right:0;
+  background:#fff;border:1px solid var(--border);
+  border-radius:6px;max-height:180px;overflow-y:auto;
+  z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.12);
+  display:none;
+}
+.brand-dropdown.open{display:block}
+.brand-item{
+  padding:9px 12px;font-size:.88rem;cursor:pointer;
+  border-bottom:1px solid #f0f0f0;
+}
+.brand-item:last-child{border-bottom:none}
+.brand-item:hover,.brand-item.highlighted{background:var(--green-pale)}
+
+/* ── Review ───────────────────────────────────────────── */
+.review-row{
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 12px;margin-bottom:8px;
+  background:#fff;
+}
+.review-row .rr-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:4px;
+}
+.review-row .rr-meta{font-size:.75rem;color:var(--text-light)}
+.review-row .rr-actions{display:flex;gap:6px;margin-top:8px}
+.badge{
+  display:inline-block;border-radius:20px;
+  padding:1px 8px;font-size:.72rem;font-weight:600;
+}
+.badge-green{background:var(--green-light);color:var(--green-dark)}
+.badge-amber{background:var(--amber-light);color:var(--amber)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+
+/* ── Guide ────────────────────────────────────────────── */
+.guide-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.guide-nav a{
+  padding:6px 12px;border-radius:20px;
+  background:var(--green-light);color:var(--green-dark);
+  font-size:.78rem;font-weight:600;text-decoration:none;
+  border:1px solid var(--border);
+}
+details{
+  background:#fff;border:1px solid var(--border);
+  border-radius:var(--radius);margin-bottom:10px;
+  box-shadow:var(--shadow);
+}
+details summary{
+  padding:12px 14px;font-weight:700;font-size:.88rem;
+  cursor:pointer;color:var(--green-dark);
+  list-style:none;display:flex;justify-content:space-between;align-items:center;
+}
+details summary::after{content:'▾';font-size:.75rem;color:var(--text-light)}
+details[open] summary::after{content:'▴'}
+details summary::-webkit-details-marker{display:none}
+.guide-body{padding:0 14px 14px;font-size:.85rem;color:var(--text);line-height:1.6}
+.guide-body p{margin-bottom:8px}
+.guide-body ul{padding-left:18px;margin-bottom:8px}
+.guide-body li{margin-bottom:4px}
+.guide-body .example{
+  background:var(--green-pale);border-left:3px solid var(--accent);
+  padding:7px 10px;border-radius:0 5px 5px 0;margin:8px 0;font-style:italic;
+}
+
+/* ── Modal/Popup ──────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;
+  display:none;
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:#fff;border-radius:12px;padding:22px;
+  max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18);
+}
+.modal-box h3{font-size:1rem;font-weight:700;margin-bottom:10px;color:var(--green-dark)}
+.modal-box p{font-size:.87rem;color:var(--text-mid);margin-bottom:14px;line-height:1.5}
+.modal-box .modal-btns{display:flex;flex-direction:column;gap:8px}
+
+/* ── Weights tab ──────────────────────────────────────── */
+.weight-context{
+  background:var(--green-pale);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;
+}
+.weight-context .wc-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light);margin-bottom:4px}
+.weight-context .wc-val{font-size:1.05rem;font-weight:700;color:var(--green-dark)}
+
+/* ── Utility ──────────────────────────────────────────── */
+.hidden{display:none!important}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.text-center{text-align:center}
+.mt8{margin-top:8px}
+.mt12{margin-top:12px}
+.queue-count{
+  display:inline-block;background:var(--amber);color:#fff;
+  border-radius:20px;padding:1px 7px;font-size:.72rem;font-weight:700;
+  margin-left:6px;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════ -->
+<header>
+  <h1>ECCA Litter Study</h1>
+  <div class="sub">Roadside Litter Categorization Applet</div>
+  <nav class="tabs" role="tablist">
+    <button class="active" data-tab="bag"     role="tab">Bag</button>
+    <button            data-tab="items"   role="tab">Items</button>
+    <button            data-tab="weights" role="tab">Weights</button>
+    <button            data-tab="review"  role="tab">Review</button>
+    <button            data-tab="guide"   role="tab">Guide</button>
+  </nav>
+</header>
+
+<!-- Context banner (Items/Weights tabs) -->
+<div id="ctx-banner" class="hidden">
+  Active bag: <span id="ctx-tid">—</span> / <span id="ctx-bag">—</span>
+  <span class="ctx-badge" id="ctx-confirmed-badge" style="display:none">✓ Confirmed</span>
+</div>
+
+<!-- ══ MAIN ════════════════════════════════════════════════ -->
+<main>
+
+<!-- ─── BAG TAB ──────────────────────────────────────────── -->
+<div class="tab-panel active" id="panel-bag">
+  <div class="card">
+    <div class="card-title">Bag Information</div>
+
+    <div class="field" id="f-transect">
+      <label>Transect ID</label>
+      <input type="text" id="bag-transect" placeholder="e.g. T-01" autocomplete="off"/>
+      <div class="field-error" id="err-transect">Enter a transect ID.</div>
+    </div>
+
+    <div class="field" id="f-bagnum">
+      <label>Bag Number</label>
+      <input type="text" id="bag-number" placeholder="e.g. 3" autocomplete="off"/>
+      <div class="field-error" id="err-bagnum">Enter a bag number.</div>
+    </div>
+
+    <div class="field">
+      <label>Classifier Name <span class="opt">optional</span></label>
+      <input type="text" id="bag-classifier" placeholder="Your name" autocomplete="off"/>
+    </div>
+
+    <div class="field" id="f-date">
+      <label>Collection Date</label>
+      <input type="date" id="bag-date"/>
+      <div class="field-error" id="err-date">Select a date.</div>
+    </div>
+
+    <div class="field" id="f-weight">
+      <label>Bag Weight (lbs)</label>
+      <input type="number" id="bag-weight" placeholder="e.g. 2.5" min="0" step="0.01"/>
+      <div class="field-error" id="err-weight">Enter the bag weight (required).</div>
+    </div>
+
+    <div class="field">
+      <label>Field Notes <span class="opt">optional</span></label>
+      <textarea id="bag-notes" placeholder="Any notes about this bag…"></textarea>
+    </div>
+
+    <div id="bag-status" class="status-msg"></div>
+
+    <button class="btn btn-primary" id="btn-save-bag">Save Bag Record &amp; Go to Item Entry</button>
+
+    <div id="change-bag-info-form" class="hidden" style="margin-top:14px">
+      <div class="divider"></div>
+      <div class="card-title">Update Bag Info</div>
+      <div class="field">
+        <label>New Transect ID</label>
+        <input type="text" id="change-transect" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>New Bag Number</label>
+        <input type="text" id="change-bagnum" autocomplete="off"/>
+      </div>
+      <button class="btn btn-primary mt8" id="btn-update-bag-info">Update Bag Info</button>
+      <button class="btn btn-secondary mt8" id="btn-cancel-bag-info" style="margin-top:8px">Cancel Bag Info Changes</button>
+    </div>
+  </div>
+
+  <!-- Edit/delete last bag -->
+  <div id="last-bag-card" class="card hidden">
+    <div class="card-title">Last Submitted Bag (this device)</div>
+    <div id="last-bag-summary" class="review-row" style="margin-bottom:8px"></div>
+    <div class="btn-row">
+      <button class="btn btn-amber btn-sm" id="btn-edit-bag">Edit / Resubmit</button>
+      <button class="btn btn-danger btn-sm" id="btn-delete-bag">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ITEMS TAB ─────────────────────────────────────────── -->
+<div class="tab-panel" id="panel-items">
+  <div class="card">
+    <div class="card-title">Material <span style="color:var(--red)">*</span></div>
+    <div class="chip-group" id="chips-material"
+         data-field="material" data-required="true" data-multi="false">
+      <div class="chip" data-value="paper_cardboard">Paper/Cardboard</div>
+      <div class="chip" data-value="plastic">Plastic</div>
+      <div class="chip" data-value="glass">Glass</div>
+      <div class="chip" data-value="metal">Metal</div>
+      <div class="chip" data-value="wood">Wood</div>
+      <div class="chip" data-value="textile">Textile</div>
+      <div class="chip" data-value="other">Other</div>
+    </div>
+    <div class="field-error" id="err-material" style="display:none;margin-top:6px">Select a material.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Functional Categories <span class="opt" style="text-transform:none;letter-spacing:0;font-size:.78rem">(select all that apply)</span></div>
+
+    <!-- Food Container -->
+    <div class="chip toggle-chip" data-value="food_container" id="chip-food">Food Container</div>
+    <div class="sub-group hidden" id="sub-food" style="margin-top:8px">
+      <div class="sub-label">Food Container sub-types</div>
+      <div class="chip-group">
+        <div class="chip toggle-chip" data-value="takeout" id="chip-takeout">Takeout Container</div>
+        <div class="chip toggle-chip" data-value="beverage" id="chip-beverage">Beverage Container</div>
+      </div>
+      <div class="sub-group hidden" id="sub-beverage" style="margin-top:8px">
+        <div class="sub-label">Beverage details</div>
+        <div class="chip-group">
+          <div class="chip toggle-chip" data-value="alcoholic" id="chip-alcoholic">Alcoholic</div>
+          <div class="chip toggle-chip" data-value="recyclable" id="chip-recyclable">Recyclable (can/bottle)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin:10px 0"></div>
+
+    <div class="chip-group" style="flex-direction:column;gap:7px">
+      <div class="chip toggle-chip" data-value="toxic_fluid">Toxic Fluid Container</div>
+      <div class="chip toggle-chip" data-value="automotive">Automotive Debris</div>
+      <div class="chip toggle-chip" data-value="construction">Construction/Demolition Debris</div>
+      <div class="chip toggle-chip" data-value="lawn_garden">Lawn/Garden Care</div>
+      <div class="chip toggle-chip" data-value="marina">Marina-Related</div>
+      <div class="chip toggle-chip" data-value="smoking">Smoking Paraphernalia</div>
+      <div class="chip toggle-chip" data-value="attire">Attire</div>
+      <div class="chip toggle-chip" data-value="furniture">Furniture</div>
+      <div class="chip toggle-chip" data-value="lumber_tags">Lumber Tags</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Likely Source <span class="opt" style="text-transform:none;letter-spacing:0;font-size:.78rem">(optional — Unknown is always acceptable)</span></div>
+    <div class="chip-group" id="chips-source" data-field="likely_source" data-multi="false">
+      <div class="chip" data-value="intentional">Intentional Litter</div>
+      <div class="chip" data-value="unsecured">Unsecured Loads</div>
+      <div class="chip" data-value="commercial">Commercial Haulers</div>
+      <div class="chip" data-value="unknown">Unknown</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Brand <span class="opt" style="text-transform:none;letter-spacing:0;font-size:.78rem">(optional)</span></div>
+    <div class="brand-wrap">
+      <input type="text" id="brand-search" placeholder="Search or type brand…" autocomplete="off" aria-label="Brand search"/>
+      <div class="brand-dropdown" id="brand-dropdown"></div>
+    </div>
+    <div id="brand-selected-display" class="hidden" style="margin-top:8px">
+      Selected: <strong id="brand-selected-name"></strong>
+      <button class="btn btn-secondary btn-sm" id="btn-clear-brand" style="margin-top:6px">Clear brand</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Size <span class="opt" style="text-transform:none;letter-spacing:0;font-size:.78rem">(optional — longest dimension)</span></div>
+    <div class="chip-group" id="chips-size" data-field="size" data-multi="false">
+      <div class="chip" data-value="small">Small (&lt;3 in)</div>
+      <div class="chip" data-value="medium">Medium (3–6 in)</div>
+      <div class="chip" data-value="large">Large (6 in – 2 ft)</div>
+      <div class="chip" data-value="very_large">Very Large (&gt;2 ft)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fragmentation</div>
+    <div class="chip toggle-chip" data-value="fragment" id="chip-fragment">This item is a fragment of a larger item</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Notes <span class="opt" style="text-transform:none;letter-spacing:0;font-size:.78rem">(optional)</span></div>
+    <div class="field" style="margin:0">
+      <textarea id="item-notes" placeholder="Anything unusual about this item…"></textarea>
+    </div>
+  </div>
+
+  <div id="item-status" class="status-msg"></div>
+  <button class="btn btn-primary" id="btn-save-item">Save Item</button>
+
+  <!-- Edit/delete last item -->
+  <div id="last-item-card" class="card hidden" style="margin-top:14px">
+    <div class="card-title">Last Submitted Item (this device)</div>
+    <div id="last-item-summary" class="review-row" style="margin-bottom:8px"></div>
+    <div class="btn-row">
+      <button class="btn btn-amber btn-sm" id="btn-edit-item">Edit / Resubmit</button>
+      <button class="btn btn-danger btn-sm" id="btn-delete-item">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── WEIGHTS TAB ───────────────────────────────────────── -->
+<div class="tab-panel" id="panel-weights">
+  <div class="weight-context">
+    <div class="wc-label">Current Bag</div>
+    <div class="wc-val" id="wt-bag-label">—</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Plastic Weight (lbs)</div>
+    <div class="field" id="f-plastic-wt">
+      <label>Total weight of plastic items in this bag</label>
+      <input type="number" id="plastic-weight" placeholder="e.g. 0.8" min="0" step="0.01"/>
+      <div class="field-error" id="err-plastic-wt">Enter the plastic weight.</div>
+    </div>
+    <div id="wt-status" class="status-msg"></div>
+    <button class="btn btn-primary" id="btn-confirm-bag">Confirm Bag &amp; Return to Bag Entry</button>
+  </div>
+</div>
+
+<!-- ─── REVIEW TAB ────────────────────────────────────────── -->
+<div class="tab-panel" id="panel-review">
+  <div class="chip-group" style="margin-bottom:12px">
+    <div class="chip selected" id="rv-tab-items" onclick="setReviewMode('items')">Recent Items</div>
+    <div class="chip" id="rv-tab-bags" onclick="setReviewMode('bags')">Recent Bags</div>
+    <div class="chip" id="rv-tab-orphan" onclick="setReviewMode('orphan')">Orphan Check</div>
+  </div>
+
+  <div id="review-status" class="status-msg"></div>
+
+  <button class="btn btn-secondary" id="btn-refresh-review" style="margin-bottom:12px">↻ Refresh from Sheet</button>
+
+  <div id="rv-panel-items"></div>
+  <div id="rv-panel-bags" class="hidden"></div>
+  <div id="rv-panel-orphan" class="hidden"></div>
+
+  <div class="divider"></div>
+  <div class="card">
+    <div class="card-title">Offline Queue</div>
+    <p style="font-size:.83rem;color:var(--text-mid);margin-bottom:10px">
+      Items submitted while offline are queued locally. Opening Review verifies them against the sheet.
+      Queue size: <strong id="queue-size">0</strong>
+    </p>
+    <div id="queue-status" class="status-msg"></div>
+    <button class="btn btn-amber" id="btn-retry-queue">Retry Queue</button>
+  </div>
+</div>
+
+<!-- ─── GUIDE TAB ─────────────────────────────────────────── -->
+<div class="tab-panel" id="panel-guide">
+  <div class="guide-nav">
+    <a href="#g-principles">Principles</a>
+    <a href="#g-material">Material</a>
+    <a href="#g-functional">Functional</a>
+    <a href="#g-source">Source</a>
+    <a href="#g-brand">Brand</a>
+    <a href="#g-size">Size/Fragment</a>
+    <a href="#g-workflow">Workflow</a>
+  </div>
+
+  <details open id="g-principles">
+    <summary>General Principles</summary>
+    <div class="guide-body">
+      <p>Each item is examined individually. Record its characteristics in the applet, then set it aside and proceed to the next item. This approach lets you capture multiple attributes per item without large-scale physical sorting.</p>
+      <p>Categories cannot anticipate every type of trash found on the highway. Use the Notes field for anything unusual. Large debris that won't fit in bags may be documented separately with descriptive notes.</p>
+      <div class="example">When in doubt, record what you can observe and add a note. An imperfect entry is better than a skipped item.</div>
+    </div>
+  </details>
+
+  <details id="g-material">
+    <summary>Material Categories</summary>
+    <div class="guide-body">
+      <p>Material categories are <strong>mutually exclusive</strong>. Assign the primary material by volume. The first four categories (Paper/Cardboard, Plastic, Glass, Metal) correspond roughly to the 2022 statewide study and enable direct comparison.</p>
+      <ul>
+        <li><strong>Paper/Cardboard:</strong> Paper packaging, cardboard, napkins, paper cups, receipts. A paper cup with a thin plastic lining is still Paper/Cardboard — the plastic lining is not the primary material by volume.</li>
+        <li><strong>Plastic:</strong> Bottles, containers, wrappers, bags, foam products. Foam is Plastic.</li>
+        <li><strong>Glass:</strong> Bottles, fragments, and other glass materials. Fragments are Glass.</li>
+        <li><strong>Metal:</strong> Aluminum cans, metal containers, other metallic debris.</li>
+        <li><strong>Wood:</strong> Wood scraps, lumber pieces, pallet fragments.</li>
+        <li><strong>Textile:</strong> Fabrics and clothing, including technical exercise gear made primarily of synthetic plastic fibers — classify by the item's function (clothing/textile), not by the polymer content.</li>
+        <li><strong>Other:</strong> Genuinely mixed-material or unidentifiable items that do not clearly fit another category. Use sparingly.</li>
+      </ul>
+      <div class="example">A mylar balloon: the primary material is plastic film → Plastic. A paper bag with staples → Paper/Cardboard. A tire fragment → Other (rubber), or use the Automotive Debris functional category to flag it.</div>
+    </div>
+  </details>
+
+  <details id="g-functional">
+    <summary>Functional Categories</summary>
+    <div class="guide-body">
+      <p>Functional categories are <strong>overlapping</strong> — an item can belong to multiple categories simultaneously. Select all that apply.</p>
+      <ul>
+        <li><strong>Food Container:</strong> Food packaging, takeout containers, food wrappers — the broad catch-all. Use sub-options to specify further.
+          <ul>
+            <li><strong>Takeout Container:</strong> Any container from a takeout or fast-food meal.</li>
+            <li><strong>Beverage Container:</strong> Any container for a beverage.
+              <ul>
+                <li><strong>Alcoholic:</strong> Beer cans, liquor bottles, wine bottles, and other alcohol-related packaging.</li>
+                <li><strong>Recyclable:</strong> Metal cans or recyclable plastic bottles (check for the recycling symbol or obvious recyclability).</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li><strong>Toxic Fluid Container:</strong> Antifreeze, motor oil, weedkiller, and similar containers. Even empty containers count.</li>
+        <li><strong>Automotive Debris:</strong> Vehicle parts, tire fragments, bumper pieces, and related materials.</li>
+        <li><strong>Construction/Demolition Debris:</strong> Wood scraps, drywall, insulation, nails, concrete, cement.</li>
+        <li><strong>Lawn/Garden Care:</strong> Lawn tools, fertilizer bags, pesticide containers, mulch packaging.</li>
+        <li><strong>Marina-Related:</strong> Anything originating from or associated with the Washougal marina — rope, netting, buoys, boat parts.</li>
+        <li><strong>Smoking Paraphernalia:</strong> Cigarette butts, vape waste, vape cartridges, lighters, cigarette packaging.</li>
+        <li><strong>Attire:</strong> Clothing, gloves, shoes, hats, PPE items.</li>
+        <li><strong>Furniture:</strong> Chairs, cushions, furniture fragments.</li>
+        <li><strong>Lumber Tags:</strong> Identification tags that detach from lumber loads and blow onto the road. These are a specific concern for commercial hauler accountability.</li>
+      </ul>
+      <div class="example">A beer can → Food Container + Beverage Container + Alcoholic + Recyclable. A vape pen → Smoking Paraphernalia (material: Plastic or Other). A lumber tag → Lumber Tags (material: Paper/Cardboard or Other).</div>
+    </div>
+  </details>
+
+  <details id="g-source">
+    <summary>Likely Source</summary>
+    <div class="guide-body">
+      <p>Likely source is a <strong>judgment call</strong> made by the sorter. This field is optional, and <strong>Unknown is a fully correct and acceptable answer</strong> — do not feel pressured to guess.</p>
+      <ul>
+        <li><strong>Intentional Litter:</strong> Items believed to have been deliberately discarded from a vehicle or by a pedestrian. Fast-food packaging, cigarette butts, and single-use drink containers are common examples.</li>
+        <li><strong>Unsecured Loads:</strong> Materials believed to have fallen or blown from vehicle loads that were not properly secured. Construction debris, loose household items.</li>
+        <li><strong>Commercial Haulers:</strong> Items that blew off secured commercial loads. Lumber tags are the archetypal example — they detach and blow off even from loads that appear properly secured. Plastic banding, packing film, and cardboard from pallets are other examples.</li>
+        <li><strong>Unknown:</strong> Cannot determine the source with any reasonable confidence. Use freely — it is better to record Unknown than to record a guess as a fact.</li>
+      </ul>
+      <div class="example">"Unknown" is a data point, not a failure. The statewide study assigned likely source at the category level; we assign it per item, which means more unknowns are expected and appropriate.</div>
+    </div>
+  </details>
+
+  <details id="g-brand">
+    <summary>Brand Information</summary>
+    <div class="guide-body">
+      <p>Brand data helps assess corporate responsibility for highway pollution and is a key goal of this study. Record any identifiable brand — search the dropdown or type a brand name.</p>
+      <p>Add new brands as you encounter them using the "Other" entry. Brand attribution is ad-hoc and cumulative: ECCA will have complete freedom to document any brand encountered.</p>
+      <div class="example">A crushed Modelo can where the logo is still readable → brand: Modelo. A generic plastic bag with no markings → leave brand blank. A faded fast-food cup where you can still read "McDonald's" → brand: McDonald's.</div>
+      <p>Only record a brand when you can confidently identify it. Degraded or ambiguous branding should be left blank rather than guessed.</p>
+    </div>
+  </details>
+
+  <details id="g-size">
+    <summary>Size &amp; Fragmentation</summary>
+    <div class="guide-body">
+      <p><strong>Size</strong> is the approximate longest dimension of the item as found. Measure it as you find it — do not estimate what it would have been before it was broken or degraded.</p>
+      <ul>
+        <li><strong>Small:</strong> Less than 3 inches (roughly a cigarette butt, a bottle cap)</li>
+        <li><strong>Medium:</strong> 3–6 inches (a standard soda can, a candy wrapper)</li>
+        <li><strong>Large:</strong> 6 inches – 2 feet (a plastic bottle, a newspaper, a paper bag)</li>
+        <li><strong>Very Large:</strong> Greater than 2 feet (a tire, a large piece of cardboard, furniture)</li>
+      </ul>
+      <p><strong>Fragment:</strong> Mark this if the item is clearly a piece of a larger broken item — scattered plastic shards, broken glass, torn sections of a bag. The fragment itself is measured as found, not reconstructed.</p>
+      <div class="example">A plastic bottle cap: Small. Half of a glass bottle: Medium or Large depending on actual size — measure the fragment, not the original bottle. A tire fragment: depends on actual size of fragment found.</div>
+    </div>
+  </details>
+
+  <details id="g-workflow">
+    <summary>Workflow Overview</summary>
+    <div class="guide-body">
+      <p>The applet is organized around a three-stage workflow for each bag:</p>
+      <ul>
+        <li><strong>1. Bag tab:</strong> Enter transect ID, bag number, bag weight, and optionally your name and field notes. Save the bag record — this creates an active bag and takes you to the Items tab.</li>
+        <li><strong>2. Items tab:</strong> Enter one item at a time. After saving an item, you'll be asked if the bag has any more items. If yes, clear the form and continue entering items. If no, go to the Weights tab to record the plastic weight and confirm the bag.</li>
+        <li><strong>3. Weights tab:</strong> After all items in the bag are entered, record the plastic weight and press Confirm Bag. This marks all items as confirmed and returns you to the Bag tab for the next bag.</li>
+      </ul>
+      <p>You cannot access the Items or Weights tabs without an active bag. The Review tab lets you return to any previous bag to edit items or re-confirm weights.</p>
+      <div class="example">If you realize mid-way through a bag that you entered the wrong bag number, go to the Bag tab and change the bag number — the app will offer to update all items already recorded for that bag.</div>
+    </div>
+  </details>
+</div>
+
+</main>
+
+<!-- ══ MODALS ══════════════════════════════════════════════ -->
+
+<!-- Bag workflow interruption -->
+<div class="modal-overlay" id="modal-bag-interrupt">
+  <div class="modal-box">
+    <h3>Bag Not Yet Confirmed</h3>
+    <p>You have an active bag that hasn't been confirmed through the Weights tab yet. What would you like to do?</p>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" id="modal-change-bag-info">Change Current Bag Info</button>
+      <button class="btn btn-amber" id="modal-new-bag">Start New Bag</button>
+      <button class="btn btn-primary" id="modal-cancel-interrupt">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- No active bag -->
+<div class="modal-overlay" id="modal-no-bag">
+  <div class="modal-box">
+    <h3>No Active Bag</h3>
+    <p>You need to save a bag record on the Bag tab before you can enter items or weights.</p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="modal-no-bag-ok">Go to Bag Tab</button>
+    </div>
+  </div>
+</div>
+
+<!-- Same bag? -->
+<div class="modal-overlay" id="modal-same-bag">
+  <div class="modal-box">
+    <h3>More Items?</h3>
+    <p>Does this bag have any more items to record?</p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="modal-same-yes">Yes — enter next item</button>
+      <button class="btn btn-secondary" id="modal-same-no">No — go to Weights</button>
+    </div>
+  </div>
+</div>
+
+<!-- Retry queue confirm -->
+<div class="modal-overlay" id="modal-retry">
+  <div class="modal-box">
+    <h3>Retry Queue</h3>
+    <p>Retrying the queue may create duplicate rows if previous submissions actually succeeded but weren't confirmed. Only retry if you're sure items are missing from the sheet. Continue?</p>
+    <div class="modal-btns">
+      <button class="btn btn-amber" id="modal-retry-yes">Yes, retry</button>
+      <button class="btn btn-primary" id="modal-retry-no">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal-overlay" id="modal-delete-confirm">
+  <div class="modal-box">
+    <h3>Delete Record</h3>
+    <p id="modal-delete-msg">Are you sure you want to delete this record from the sheet? This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn btn-danger" id="modal-delete-yes">Delete</button>
+      <button class="btn btn-primary" id="modal-delete-no">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Resume bag from review -->
+<div class="modal-overlay" id="modal-resume-bag">
+  <div class="modal-box">
+    <h3>Resume Bag</h3>
+    <p id="modal-resume-msg"></p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" id="modal-resume-yes">Resume This Bag</button>
+      <button class="btn btn-secondary" id="modal-resume-no">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ══════════════════════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGo_1nXNqUlnjTt7ia7CqiRr6uGrarAUGCZEfGR6ApSIZkGtKRxZMcz1e4W4qPjqxfvQ/exec';
+
+// ══════════════════════════════════════════════════════════════
+// BRAND LIST
+// ══════════════════════════════════════════════════════════════
+const BRANDS = [
+  'Budweiser','Bud Light','Coors','Coors Light','Miller Lite',
+  'Modelo','Corona','Heineken','White Claw','Truly',
+  'Coca-Cola','Pepsi','Sprite','Dr Pepper','Mountain Dew',
+  'Red Bull','Monster Energy','Gatorade','Starbucks','Snapple',
+  'McDonald\'s','Burger King','Taco Bell','Wendy\'s','Subway',
+  'Marlboro','Newport','Camel','JUUL','Vuse',
+  'Other'
+];
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let activeBag = null;          // { transect_id, bag_number, classifier_name }
+let lastBag   = null;          // { timestamp, data }
+let lastItem  = null;          // { timestamp, data }
+let queue     = [];            // offline queue
+let reviewData= { bags:[], items:[] };
+let reviewMode= 'items';
+let selectedBrand = '';
+let brandDropdownOpen = false;
+
+const LS = {
+  save() {
+    localStorage.setItem('ecca_active', JSON.stringify(activeBag));
+    localStorage.setItem('ecca_lastBag',  JSON.stringify(lastBag));
+    localStorage.setItem('ecca_lastItem', JSON.stringify(lastItem));
+    localStorage.setItem('ecca_queue',    JSON.stringify(queue));
+  },
+  load() {
+    try { activeBag = JSON.parse(localStorage.getItem('ecca_active')) || null; } catch(e){}
+    try { lastBag   = JSON.parse(localStorage.getItem('ecca_lastBag'))  || null; } catch(e){}
+    try { lastItem  = JSON.parse(localStorage.getItem('ecca_lastItem')) || null; } catch(e){}
+    try { queue     = JSON.parse(localStorage.getItem('ecca_queue'))    || []; } catch(e){}
+  }
+};
+
+// ══════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════
+function $(id){ return document.getElementById(id); }
+function now(){ return new Date().toISOString(); }
+function fmtDate(iso){ try{ return new Date(iso).toLocaleString(); }catch(e){return iso;} }
+
+function showStatus(el, msg, type='info'){
+  el.textContent = msg;
+  el.className = 'status-msg show ' + type;
+}
+function hideStatus(el){ el.className = 'status-msg'; }
+
+function fieldError(fieldEl, errEl, show){
+  if(show){
+    fieldEl.classList.add('has-error');
+    errEl.style.display = 'block';
+  } else {
+    fieldEl.classList.remove('has-error');
+    errEl.style.display = 'none';
+  }
+}
+
+function openModal(id){ $(id).classList.add('open'); }
+function closeModal(id){ $(id).classList.remove('open'); }
+function closeAllModals(){
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'));
+}
+
+// ══════════════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════════════
+const TAB_NAMES = ['bag','items','weights','review','guide'];
+function switchTab(name){
+  // Access control
+  if((name==='items'||name==='weights') && !activeBag){
+    openModal('modal-no-bag');
+    return;
+  }
+  TAB_NAMES.forEach(t=>{
+    document.querySelector(`[data-tab="${t}"]`).classList.toggle('active', t===name);
+    $(`panel-${t}`).classList.toggle('active', t===name);
+  });
+  const banner = $('ctx-banner');
+  if(name==='items'||name==='weights'){
+    banner.classList.remove('hidden');
+    updateCtxBanner();
+  } else {
+    banner.classList.add('hidden');
+  }
+  if(name==='items') renderLastItemCard();
+  if(name==='review') loadReview();
+  if(name==='weights') updateWeightsTab();
+}
+
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
+});
+
+$('modal-no-bag-ok').addEventListener('click',()=>{ closeModal('modal-no-bag'); switchTab('bag'); });
+
+function updateCtxBanner(){
+  if(!activeBag){ $('ctx-banner').classList.add('hidden'); return; }
+  $('ctx-tid').textContent = activeBag.transect_id;
+  $('ctx-bag').textContent = activeBag.bag_number;
+}
+
+// ══════════════════════════════════════════════════════════════
+// CHIP BUTTONS — single-select groups
+// ══════════════════════════════════════════════════════════════
+function initChipGroups(){
+  document.querySelectorAll('.chip-group').forEach(group=>{
+    const multi = group.dataset.multi !== 'false'; // default allow multi
+    // Only attach to chips that are NOT toggle-chips — those have their own listeners
+    group.querySelectorAll('.chip:not(.toggle-chip)').forEach(chip=>{
+      chip.addEventListener('click',()=>{
+        if(!multi){
+          group.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+        }
+        chip.classList.toggle('selected');
+        // Clear error if any
+        const errId = 'err-' + group.dataset.field;
+        const errEl = $(errId);
+        if(errEl && chip.classList.contains('selected')) errEl.style.display='none';
+      });
+    });
+  });
+}
+
+// Toggle chips (independent)
+function initToggleChips(){
+  // Food container parent
+  $('chip-food').addEventListener('click',()=>{
+    $('chip-food').classList.toggle('selected');
+    const on = $('chip-food').classList.contains('selected');
+    $('sub-food').classList.toggle('hidden',!on);
+    if(!on){
+      // clear children
+      ['chip-takeout','chip-beverage','chip-alcoholic','chip-recyclable'].forEach(id=>{
+        $(id).classList.remove('selected');
+      });
+      $('sub-beverage').classList.add('hidden');
+    }
+  });
+  $('chip-beverage').addEventListener('click',()=>{
+    $('chip-beverage').classList.toggle('selected');
+    const on = $('chip-beverage').classList.contains('selected');
+    $('sub-beverage').classList.toggle('hidden',!on);
+    if(!on){
+      ['chip-alcoholic','chip-recyclable'].forEach(id=>$(id).classList.remove('selected'));
+    }
+  });
+  ['chip-takeout','chip-alcoholic','chip-recyclable'].forEach(id=>{
+    $(id).addEventListener('click',()=>$(id).classList.toggle('selected'));
+  });
+  $('chip-fragment').addEventListener('click',()=>$('chip-fragment').classList.toggle('selected'));
+
+  // Other top-level functional toggles (no id — attach to all remaining toggle-chips)
+  const alreadyHandled = new Set(['chip-food','chip-beverage','chip-takeout','chip-alcoholic','chip-recyclable','chip-fragment']);
+  document.querySelectorAll('#panel-items .toggle-chip').forEach(chip=>{
+    if(alreadyHandled.has(chip.id)) return;
+    chip.addEventListener('click',()=>chip.classList.toggle('selected'));
+  });
+}
+
+function getChipValue(groupId){
+  const group = $(groupId);
+  if(!group) return '';
+  const sel = group.querySelector('.chip.selected');
+  return sel ? sel.dataset.value : '';
+}
+
+function getFunctionalCategories(){
+  const cats = [];
+  const map = [
+    ['chip-food','food_container'],
+    ['chip-takeout','takeout'],
+    ['chip-beverage','beverage'],
+    ['chip-alcoholic','alcoholic'],
+    ['chip-recyclable','recyclable'],
+  ];
+  document.querySelectorAll('#panel-items .toggle-chip').forEach(chip=>{
+    if(chip.classList.contains('selected') && chip.id !== 'chip-fragment'){
+      cats.push(chip.dataset.value);
+    }
+  });
+  return cats.join(',');
+}
+
+function clearItemForm(){
+  document.querySelectorAll('#panel-items .chip').forEach(c=>c.classList.remove('selected'));
+  $('sub-food').classList.add('hidden');
+  $('sub-beverage').classList.add('hidden');
+  $('item-notes').value = '';
+  selectedBrand = '';
+  $('brand-search').value = '';
+  $('brand-selected-display').classList.add('hidden');
+  $('brand-dropdown').classList.remove('open');
+  hideStatus($('item-status'));
+}
+
+// ══════════════════════════════════════════════════════════════
+// BRAND SEARCH
+// ══════════════════════════════════════════════════════════════
+function initBrandSearch(){
+  const input  = $('brand-search');
+  const drop   = $('brand-dropdown');
+
+  function renderDropdown(filter=''){
+    const f = filter.trim().toLowerCase();
+    const list = f
+      ? BRANDS.filter(b=>b.toLowerCase().includes(f))
+      : BRANDS;
+    drop.innerHTML = '';
+    if(!list.length){
+      drop.innerHTML = '<div class="brand-item" style="color:var(--text-light)">No matches — will be saved as typed</div>';
+    }
+    list.forEach((b,i)=>{
+      const div = document.createElement('div');
+      div.className = 'brand-item';
+      div.textContent = b;
+      div.addEventListener('mousedown',(e)=>{
+        e.preventDefault(); // prevent blur before click
+        selectBrand(b==='Other' ? filter || 'Other' : b);
+      });
+      drop.appendChild(div);
+    });
+    drop.classList.add('open');
+    brandDropdownOpen = true;
+  }
+
+  input.addEventListener('focus',()=>renderDropdown(input.value));
+  input.addEventListener('input',()=>renderDropdown(input.value));
+  input.addEventListener('blur',()=>{
+    setTimeout(()=>{
+      drop.classList.remove('open');
+      brandDropdownOpen = false;
+      // If user typed something not in list and didn't pick, treat as custom brand
+      if(input.value.trim() && !selectedBrand){
+        selectBrand(input.value.trim());
+      }
+    },180);
+  });
+  input.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      const highlighted = drop.querySelector('.highlighted');
+      if(highlighted) highlighted.dispatchEvent(new MouseEvent('mousedown'));
+      else if(input.value.trim()) selectBrand(input.value.trim());
+    }
+    if(e.key==='ArrowDown'){
+      const items = drop.querySelectorAll('.brand-item');
+      let idx = Array.from(items).findIndex(el=>el.classList.contains('highlighted'));
+      if(idx<items.length-1) idx++;
+      items.forEach(el=>el.classList.remove('highlighted'));
+      if(items[idx]) items[idx].classList.add('highlighted');
+    }
+    if(e.key==='ArrowUp'){
+      const items = drop.querySelectorAll('.brand-item');
+      let idx = Array.from(items).findIndex(el=>el.classList.contains('highlighted'));
+      if(idx>0) idx--;
+      items.forEach(el=>el.classList.remove('highlighted'));
+      if(items[idx]) items[idx].classList.add('highlighted');
+    }
+    if(e.key==='Escape'){ drop.classList.remove('open'); }
+  });
+
+  $('btn-clear-brand').addEventListener('click',()=>{
+    selectedBrand = '';
+    input.value = '';
+    $('brand-selected-display').classList.add('hidden');
+  });
+}
+
+function selectBrand(name){
+  selectedBrand = name;
+  $('brand-search').value = name;
+  $('brand-selected-name').textContent = name;
+  $('brand-selected-display').classList.remove('hidden');
+  $('brand-dropdown').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════════════
+// NETWORK — post to Apps Script with queue
+// ══════════════════════════════════════════════════════════════
+async function postToScript(payload){
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method:'POST',
+      body: JSON.stringify(payload),
+      // No Content-Type header — avoids CORS preflight that Apps Script can't handle
+    });
+    const data = await res.json();
+    return data;
+  } catch(e) {
+    return { ok:false, error: e.message };
+  }
+}
+
+async function submitWithQueue(payload){
+  queue.push(payload);
+  LS.save();
+  updateQueueCount();
+  const result = await postToScript(payload);
+  if(result && result.ok){
+    queue = queue.filter(q=>q!==payload);
+    LS.save();
+    updateQueueCount();
+  }
+  return result;
+}
+
+function updateQueueCount(){
+  $('queue-size').textContent = queue.length;
+}
+
+// ══════════════════════════════════════════════════════════════
+// BAG TAB
+// ══════════════════════════════════════════════════════════════
+let _prevTransect = '';
+let _prevBagNum   = '';
+let _interruptPending = null; // { field, value }
+
+function initBagTab(){
+  const tid = $('bag-transect');
+  const bnum = $('bag-number');
+  const today = new Date().toISOString().slice(0,10);
+  $('bag-date').value = today;
+
+  // Watch for changes when active bag exists
+  tid.addEventListener('change', ()=>handleBagFieldChange());
+  bnum.addEventListener('change', ()=>handleBagFieldChange());
+
+  $('btn-save-bag').addEventListener('click', saveBag);
+  $('btn-update-bag-info').addEventListener('click', updateBagInfo);
+  $('btn-cancel-bag-info').addEventListener('click', cancelBagInfoChange);
+
+  // Modal handlers
+  $('modal-change-bag-info').addEventListener('click',()=>{
+    closeModal('modal-bag-interrupt');
+    $('change-transect').value = activeBag ? activeBag.transect_id : '';
+    $('change-bagnum').value   = activeBag ? activeBag.bag_number  : '';
+    $('change-bag-info-form').classList.remove('hidden');
+  });
+  $('modal-new-bag').addEventListener('click',()=>{
+    closeModal('modal-bag-interrupt');
+    activeBag = null;
+    LS.save();
+    updateCtxBanner();
+    // Keep the new values the user typed
+  });
+  $('modal-cancel-interrupt').addEventListener('click',()=>{
+    closeModal('modal-bag-interrupt');
+    // Restore previous values
+    tid.value  = _prevTransect;
+    bnum.value = _prevBagNum;
+  });
+
+  if(activeBag){
+    tid.value  = activeBag.transect_id;
+    bnum.value = activeBag.bag_number;
+    if(activeBag.classifier_name) $('bag-classifier').value = activeBag.classifier_name;
+    _prevTransect = activeBag.transect_id;
+    _prevBagNum   = activeBag.bag_number;
+  }
+
+  renderLastBagCard();
+}
+
+function handleBagFieldChange(){
+  if(!activeBag) return;
+  const newTid  = $('bag-transect').value.trim();
+  const newBnum = $('bag-number').value.trim();
+  if(newTid !== activeBag.transect_id || newBnum !== activeBag.bag_number){
+    openModal('modal-bag-interrupt');
+  }
+}
+
+async function saveBag(){
+  const tid    = $('bag-transect').value.trim();
+  const bnum   = $('bag-number').value.trim();
+  const date   = $('bag-date').value;
+  const wt     = parseFloat($('bag-weight').value);
+  let valid = true;
+
+  fieldError($('f-transect'), $('err-transect'), !tid);    if(!tid) valid=false;
+  fieldError($('f-bagnum'),   $('err-bagnum'),   !bnum);   if(!bnum) valid=false;
+  fieldError($('f-date'),     $('err-date'),     !date);   if(!date) valid=false;
+  fieldError($('f-weight'),   $('err-weight'),   isNaN(wt)||wt<0); if(isNaN(wt)||wt<0) valid=false;
+
+  if(!valid) return;
+
+  const classifier = $('bag-classifier').value.trim();
+  const ts = now();
+  const payload = {
+    action:'writeBag',
+    data:{
+      timestamp:ts, transect_id:tid, bag_number:bnum,
+      classifier_name:classifier, date, bag_weight_lb:wt,
+      plastic_weight_lb:'', confirmed:false,
+      field_notes:$('bag-notes').value.trim()
+    }
+  };
+
+  $('btn-save-bag').disabled = true;
+  showStatus($('bag-status'), 'Saving…', 'info');
+
+  const res = await submitWithQueue(payload);
+  $('btn-save-bag').disabled = false;
+
+  if(res && res.ok){
+    showStatus($('bag-status'),'Bag saved!','success');
+  } else {
+    showStatus($('bag-status'),'Saved to queue (offline). Will retry when connected.','warn');
+  }
+
+  activeBag = { transect_id:tid, bag_number:bnum, classifier_name:classifier };
+  lastBag = { timestamp:ts, data:payload.data };
+  _prevTransect = tid;
+  _prevBagNum   = bnum;
+  LS.save();
+  renderLastBagCard();
+
+  // Carry classifier to items tab
+  // (auto-fill happens on item form open)
+
+  setTimeout(()=>switchTab('items'), 800);
+}
+
+async function updateBagInfo(){
+  const newTid  = $('change-transect').value.trim();
+  const newBnum = $('change-bagnum').value.trim();
+  if(!newTid || !newBnum){ alert('Please fill in both fields.'); return; }
+
+  const oldTid  = activeBag.transect_id;
+  const oldBnum = activeBag.bag_number;
+
+  $('btn-update-bag-info').disabled = true;
+  const res = await postToScript({
+    action:'updateBagInfo',
+    oldTransectId: oldTid, oldBagNumber: oldBnum,
+    newTransectId: newTid, newBagNumber: newBnum
+  });
+
+  if(res && res.ok){
+    activeBag.transect_id = newTid;
+    activeBag.bag_number  = newBnum;
+    $('bag-transect').value = newTid;
+    $('bag-number').value   = newBnum;
+    _prevTransect = newTid;
+    _prevBagNum   = newBnum;
+    LS.save();
+    $('change-bag-info-form').classList.add('hidden');
+  } else {
+    alert('Update failed: ' + (res ? res.error : 'Network error'));
+  }
+  $('btn-update-bag-info').disabled = false;
+}
+
+function cancelBagInfoChange(){
+  $('bag-transect').value = _prevTransect;
+  $('bag-number').value   = _prevBagNum;
+  $('change-bag-info-form').classList.add('hidden');
+}
+
+function renderLastBagCard(){
+  const card = $('last-bag-card');
+  if(!lastBag){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const d = lastBag.data;
+  $('last-bag-summary').innerHTML = `
+    <div class="rr-head"><span>T: ${d.transect_id} / Bag: ${d.bag_number}</span>
+    <span class="badge badge-blue">${d.bag_weight_lb} lb</span></div>
+    <div class="rr-meta">${fmtDate(lastBag.timestamp)} · ${d.classifier_name||'—'}</div>`;
+}
+
+$('btn-edit-bag').addEventListener('click', async ()=>{
+  if(!lastBag) return;
+  // delete from sheet, repopulate form
+  const res = await postToScript({ action:'delete', tab:'Bags', timestamp: lastBag.timestamp });
+  if(res && res.ok){
+    const d = lastBag.data;
+    $('bag-transect').value    = d.transect_id;
+    $('bag-number').value      = d.bag_number;
+    $('bag-classifier').value  = d.classifier_name||'';
+    $('bag-date').value        = d.date;
+    $('bag-weight').value      = d.bag_weight_lb;
+    $('bag-notes').value       = d.field_notes||'';
+    lastBag = null;
+    LS.save();
+    renderLastBagCard();
+    switchTab('bag');
+  } else {
+    alert('Could not retrieve record: ' + (res?res.error:'Network error'));
+  }
+});
+
+$('btn-delete-bag').addEventListener('click',()=>{
+  $('modal-delete-msg').textContent = 'Delete this bag record from the sheet? This cannot be undone.';
+  openModal('modal-delete-confirm');
+  $('modal-delete-yes').onclick = async ()=>{
+    closeModal('modal-delete-confirm');
+    if(!lastBag) return;
+    const res = await postToScript({ action:'delete', tab:'Bags', timestamp: lastBag.timestamp });
+    if(res && res.ok){ lastBag=null; LS.save(); renderLastBagCard(); }
+    else alert('Delete failed: '+(res?res.error:'Network error'));
+  };
+});
+
+// ══════════════════════════════════════════════════════════════
+// ITEMS TAB
+// ══════════════════════════════════════════════════════════════
+function initItemsTab(){
+  $('btn-save-item').addEventListener('click', saveItem);
+
+  // Same-bag modal
+  $('modal-same-yes').addEventListener('click',()=>{
+    closeModal('modal-same-bag');
+    clearItemForm();
+    // stay on items tab, re-fill classifier
+    if(activeBag && activeBag.classifier_name){
+      // classifier is a plain text field we handle inline
+    }
+    renderLastItemCard();
+  });
+  $('modal-same-no').addEventListener('click',()=>{
+    closeModal('modal-same-bag');
+    clearItemForm();
+    switchTab('weights');
+  });
+
+  $('btn-edit-item').addEventListener('click', async ()=>{
+    if(!lastItem) return;
+    const res = await postToScript({ action:'delete', tab:'Items', timestamp: lastItem.timestamp });
+    if(res && res.ok){
+      populateItemForm(lastItem.data);
+      lastItem = null; LS.save(); renderLastItemCard();
+    } else {
+      alert('Could not retrieve record: '+(res?res.error:'Network error'));
+    }
+  });
+
+  $('btn-delete-item').addEventListener('click',()=>{
+    $('modal-delete-msg').textContent = 'Delete this item record from the sheet? This cannot be undone.';
+    openModal('modal-delete-confirm');
+    $('modal-delete-yes').onclick = async ()=>{
+      closeModal('modal-delete-confirm');
+      if(!lastItem) return;
+      const res = await postToScript({ action:'delete', tab:'Items', timestamp: lastItem.timestamp });
+      if(res && res.ok){ lastItem=null; LS.save(); renderLastItemCard(); }
+      else alert('Delete failed: '+(res?res.error:'Network error'));
+    };
+  });
+}
+
+function populateItemForm(d){
+  clearItemForm();
+  // Material
+  document.querySelectorAll('#chips-material .chip').forEach(c=>{
+    if(c.dataset.value===d.material) c.classList.add('selected');
+  });
+  // Functional categories
+  const cats = (d.functional_categories||'').split(',').map(s=>s.trim());
+  document.querySelectorAll('#panel-items .toggle-chip').forEach(chip=>{
+    if(cats.includes(chip.dataset.value)) chip.classList.add('selected');
+  });
+  if(cats.includes('food_container')) $('sub-food').classList.remove('hidden');
+  if(cats.includes('beverage'))       $('sub-beverage').classList.remove('hidden');
+  // Source
+  document.querySelectorAll('#chips-source .chip').forEach(c=>{
+    if(c.dataset.value===d.likely_source) c.classList.add('selected');
+  });
+  // Size
+  document.querySelectorAll('#chips-size .chip').forEach(c=>{
+    if(c.dataset.value===d.size) c.classList.add('selected');
+  });
+  // Brand
+  if(d.brand){ selectBrand(d.brand); }
+  // Fragment
+  if(d.is_fragment===true||d.is_fragment==='true') $('chip-fragment').classList.add('selected');
+  // Notes
+  $('item-notes').value = d.notes||'';
+}
+
+async function saveItem(){
+  if(!activeBag){
+    openModal('modal-no-bag'); return;
+  }
+  const material = getChipValue('chips-material');
+  if(!material){
+    $('err-material').style.display='block';
+    return;
+  }
+  $('err-material').style.display='none';
+
+  const ts = now();
+  const payload = {
+    action:'writeItem',
+    data:{
+      timestamp:ts,
+      transect_id: activeBag.transect_id,
+      bag_number:  activeBag.bag_number,
+      classifier:  activeBag.classifier_name||'',
+      material,
+      functional_categories: getFunctionalCategories(),
+      likely_source: getChipValue('chips-source'),
+      brand: selectedBrand,
+      size:  getChipValue('chips-size'),
+      is_fragment: $('chip-fragment').classList.contains('selected'),
+      notes: $('item-notes').value.trim(),
+      confirmed: false
+    }
+  };
+
+  $('btn-save-item').disabled = true;
+  showStatus($('item-status'),'Saving…','info');
+
+  const res = await submitWithQueue(payload);
+  $('btn-save-item').disabled = false;
+
+  if(res && res.ok){
+    showStatus($('item-status'),'Item saved!','success');
+  } else {
+    showStatus($('item-status'),'Saved to queue (offline).','warn');
+  }
+
+  lastItem = { timestamp:ts, data:payload.data };
+  LS.save();
+  renderLastItemCard();
+
+  setTimeout(()=>openModal('modal-same-bag'), 600);
+}
+
+function renderLastItemCard(){
+  const card = $('last-item-card');
+  if(!lastItem){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const d = lastItem.data;
+  $('last-item-summary').innerHTML = `
+    <div class="rr-head"><span>${d.material||'—'}</span>
+    <span class="badge badge-green">${d.size||'—'}</span></div>
+    <div class="rr-meta">${d.functional_categories||'—'} · Brand: ${d.brand||'—'} · ${fmtDate(lastItem.timestamp)}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// WEIGHTS TAB
+// ══════════════════════════════════════════════════════════════
+function updateWeightsTab(){
+  if(activeBag){
+    $('wt-bag-label').textContent = `Transect ${activeBag.transect_id} / Bag ${activeBag.bag_number}`;
+  }
+}
+
+$('plastic-weight').addEventListener('input',()=>{
+  fieldError($('f-plastic-wt'),$('err-plastic-wt'),false);
+});
+
+$('btn-confirm-bag').addEventListener('click', async ()=>{
+  const wt = parseFloat($('plastic-weight').value);
+  if(isNaN(wt)||wt<0){
+    fieldError($('f-plastic-wt'),$('err-plastic-wt'),true);
+    return;
+  }
+  fieldError($('f-plastic-wt'),$('err-plastic-wt'),false);
+
+  if(!activeBag){ openModal('modal-no-bag'); return; }
+
+  // Snapshot bag identity before clearing state
+  const tid = activeBag.transect_id;
+  const bnum = activeBag.bag_number;
+
+  const payload = {
+    action: 'confirmBag',
+    data: {
+      timestamp: now(),
+      transect_id: tid,
+      bag_number: bnum,
+      plastic_weight_lb: wt
+    }
+  };
+
+  // Clear active bag state and UI immediately — don't wait on network
+  activeBag = null;
+  LS.save();
+  $('bag-weight').value   = '';
+  $('bag-number').value   = '';
+  $('bag-transect').value = '';
+  $('plastic-weight').value = '';
+  _prevTransect = '';
+  _prevBagNum   = '';
+
+  // Queue and send — same pattern as writeBag/writeItem
+  showStatus($('wt-status'),'Confirming…','info');
+  const res = await submitWithQueue(payload);
+
+  if(res && res.ok){
+    showStatus($('wt-status'),'Bag confirmed!','success');
+  } else {
+    showStatus($('wt-status'),'Queued for sync — will confirm when reconnected.','warn');
+  }
+  setTimeout(()=>{
+    hideStatus($('wt-status'));
+    switchTab('bag');
+  }, 900);
+});
+
+// ══════════════════════════════════════════════════════════════
+// REVIEW TAB
+// ══════════════════════════════════════════════════════════════
+function setReviewMode(mode){
+  reviewMode = mode;
+  ['items','bags','orphan'].forEach(m=>{
+    $(`rv-tab-${m}`).classList.toggle('selected', m===mode);
+    $(`rv-panel-${m}`).classList.toggle('hidden', m!==mode);
+  });
+}
+
+async function loadReview(){
+  showStatus($('review-status'),'Loading from sheet…','info');
+  const res = await fetch(SCRIPT_URL).then(r=>r.json()).catch(()=>null);
+  if(!res || !res.ok){
+    showStatus($('review-status'),'Could not load sheet data. Check your connection.','error');
+    return;
+  }
+  reviewData = res;
+  hideStatus($('review-status'));
+  verifyQueue(res);
+  renderReview();
+}
+
+$('btn-refresh-review').addEventListener('click', loadReview);
+
+function verifyQueue(sheetData){
+  if(!queue.length) return;
+  const bagTs  = new Set((sheetData.bags  ||[]).map(r=>String(r.timestamp)));
+  const itemTs = new Set((sheetData.items ||[]).map(r=>String(r.timestamp)));
+  // For confirmBag: build a set of "tid|bnum" keys where confirmed===true in sheet
+  const confirmedBags = new Set(
+    (sheetData.bags||[])
+      .filter(r=>r.confirmed===true||r.confirmed==='TRUE'||r.confirmed==='true')
+      .map(r=>String(r.transect_id).trim().toLowerCase()+'|'+String(r.bag_number).trim().toLowerCase())
+  );
+  const before = queue.length;
+  queue = queue.filter(q=>{
+    const ts = String(q.data && q.data.timestamp);
+    if(q.action==='writeBag'  && bagTs.has(ts))  return false;
+    if(q.action==='writeItem' && itemTs.has(ts)) return false;
+    if(q.action==='confirmBag'){
+      const d = q.data || q;
+      const k = String(d.transect_id).trim().toLowerCase()+'|'+String(d.bag_number).trim().toLowerCase();
+      if(confirmedBags.has(k)) return false;
+    }
+    return true;
+  });
+  if(queue.length < before){
+    showStatus($('queue-status'), `Verified — ${before-queue.length} queued item(s) confirmed in sheet.`, 'success');
+    LS.save();
+    updateQueueCount();
+  }
+}
+
+function renderReview(){
+  renderReviewItems();
+  renderReviewBags();
+  renderOrphanCheck();
+}
+
+function renderReviewItems(){
+  const panel = $('rv-panel-items');
+  const items = [...(reviewData.items||[])].reverse().slice(0,30);
+  if(!items.length){ panel.innerHTML='<p style="color:var(--text-light);font-size:.85rem">No items found.</p>'; return; }
+  panel.innerHTML = items.map(it=>`
+    <div class="review-row">
+      <div class="rr-head">
+        <span>T: ${it.transect_id} / Bag: ${it.bag_number}</span>
+        <span class="badge ${it.confirmed?'badge-green':'badge-amber'}">${it.confirmed?'Confirmed':'Pending'}</span>
+      </div>
+      <div class="rr-meta">${it.material||'—'} · ${it.functional_categories||'—'} · Brand: ${it.brand||'—'}</div>
+      <div class="rr-meta">${fmtDate(it.timestamp)}</div>
+    </div>`).join('');
+}
+
+function renderReviewBags(){
+  const panel = $('rv-panel-bags');
+  // Sort by most recent edit (timestamp desc), then bag_number desc within transect
+  const bags = [...(reviewData.bags||[])].sort((a,b)=>{
+    if(a.transect_id !== b.transect_id) return String(b.timestamp).localeCompare(String(a.timestamp));
+    return String(b.bag_number).localeCompare(String(a.bag_number), undefined, {numeric:true});
+  });
+  if(!bags.length){ panel.innerHTML='<p style="color:var(--text-light);font-size:.85rem">No bags found.</p>'; return; }
+  panel.innerHTML = bags.map(bg=>`
+    <div class="review-row">
+      <div class="rr-head">
+        <span>T: ${bg.transect_id} / Bag: ${bg.bag_number}</span>
+        <span class="badge ${bg.confirmed?'badge-green':'badge-amber'}">${bg.confirmed?'Confirmed':'Pending'}</span>
+      </div>
+      <div class="rr-meta">${bg.date||'—'} · ${bg.bag_weight_lb||'—'} lb total · ${bg.plastic_weight_lb||'—'} lb plastic</div>
+      <div class="rr-meta">Classifier: ${bg.classifier_name||'—'} · ${fmtDate(bg.timestamp)}</div>
+      <div class="rr-actions">
+        <button class="btn btn-blue btn-sm" onclick="resumeBagFromReview('${bg.transect_id}','${bg.bag_number}','${bg.confirmed}')">Resume</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderOrphanCheck(){
+  const panel = $('rv-panel-orphan');
+  const bags  = reviewData.bags  || [];
+  const items = reviewData.items || [];
+
+  // Normalize keys to trim+lowercase for comparison
+  function key(tid,bnum){ return String(tid).trim().toLowerCase()+'|'+String(bnum).trim().toLowerCase(); }
+  const bagKeys  = new Set(bags.map(b=>key(b.transect_id,b.bag_number)));
+  const itemKeys = new Set(items.map(i=>key(i.transect_id,i.bag_number)));
+
+  const orphanItems = items.filter(i=>!bagKeys.has(key(i.transect_id,i.bag_number)));
+  const zeroBags    = bags.filter(b=>!itemKeys.has(key(b.transect_id,b.bag_number)));
+
+  let html = '';
+  if(!orphanItems.length && !zeroBags.length){
+    html = '<div class="status-msg show success">No orphans found — all items match a bag record.</div>';
+  }
+  if(orphanItems.length){
+    html += `<div class="card"><div class="card-title">⚠ Items without matching bag (${orphanItems.length})</div>`;
+    html += orphanItems.map(i=>`
+      <div class="review-row">
+        <div class="rr-head"><span>T: ${i.transect_id} / Bag: ${i.bag_number}</span>
+        <span class="badge badge-red">No bag record</span></div>
+        <div class="rr-meta">${i.material||'—'} · ${fmtDate(i.timestamp)}</div>
+      </div>`).join('');
+    html += '</div>';
+  }
+  if(zeroBags.length){
+    html += `<div class="card"><div class="card-title">⚠ Bags with no items (${zeroBags.length})</div>`;
+    html += zeroBags.map(b=>`
+      <div class="review-row">
+        <div class="rr-head"><span>T: ${b.transect_id} / Bag: ${b.bag_number}</span>
+        <span class="badge badge-amber">No items</span></div>
+        <div class="rr-meta">${b.date||'—'} · ${fmtDate(b.timestamp)}</div>
+      </div>`).join('');
+    html += '</div>';
+  }
+  panel.innerHTML = html;
+}
+
+function resumeBagFromReview(tid, bnum, confirmed){
+  $('modal-resume-msg').textContent =
+    `Resume Transect ${tid} / Bag ${bnum}?` +
+    (confirmed==='true' ? ' This bag was previously confirmed — confirming again will overwrite the plastic weight.' : '');
+  openModal('modal-resume-bag');
+  $('modal-resume-yes').onclick = ()=>{
+    closeModal('modal-resume-bag');
+    activeBag = { transect_id:tid, bag_number:bnum, classifier_name: activeBag?.classifier_name||'' };
+    $('bag-transect').value = tid;
+    $('bag-number').value   = bnum;
+    _prevTransect = tid;
+    _prevBagNum   = bnum;
+    LS.save();
+    updateCtxBanner();
+    switchTab('items');
+  };
+  $('modal-resume-no').onclick = ()=>closeModal('modal-resume-bag');
+}
+
+// ══════════════════════════════════════════════════════════════
+// RETRY QUEUE
+// ══════════════════════════════════════════════════════════════
+$('btn-retry-queue').addEventListener('click',()=>openModal('modal-retry'));
+$('modal-retry-no').addEventListener('click',()=>closeModal('modal-retry'));
+$('modal-retry-yes').addEventListener('click', async ()=>{
+  closeModal('modal-retry');
+  if(!queue.length){
+    showStatus($('queue-status'),'Queue is empty.','info');
+    return;
+  }
+  showStatus($('queue-status'),'Retrying…','info');
+  let success=0, fail=0;
+  for(const payload of [...queue]){
+    const res = await postToScript(payload);
+    if(res && res.ok){
+      queue = queue.filter(q=>q!==payload);
+      success++;
+    } else { fail++; }
+  }
+  LS.save();
+  updateQueueCount();
+  showStatus($('queue-status'),
+    `Done. ${success} sent, ${fail} still pending.`,
+    fail?'warn':'success');
+});
+
+// ══════════════════════════════════════════════════════════════
+// DELETE MODAL — shared cancel
+// ══════════════════════════════════════════════════════════════
+$('modal-delete-no').addEventListener('click',()=>closeModal('modal-delete-confirm'));
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+LS.load();
+updateQueueCount();
+initChipGroups();
+initToggleChips();
+initBrandSearch();
+initBagTab();
+initItemsTab();
+if(activeBag) updateCtxBanner();
+renderLastBagCard();
+renderLastItemCard();
+</script>
+</body>
+</html>
